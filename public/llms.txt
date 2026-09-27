@@ -1,0 +1,48 @@
+# GoGlobal
+
+> GoGlobal is a global opportunities platform that helps students and early professionals discover opportunities from around the world.
+
+## About GoGlobal
+
+GoGlobal brings global opportunities together in one platform so students can discover programs without searching across multiple websites and communities.
+
+The platform focuses on helping users discover opportunities based on their interests, goals, location and career aspirations.
+
+## Global Opportunities
+
+GoGlobal helps users discover:
+
+- Internships
+- Scholarships
+- Fellowships
+- Research programs
+- Conferences
+- Hackathons
+- Competitions
+- Leadership programs
+- Mentorship programs
+- Startup programs
+- Exchange programs
+- Networking events
+- Volunteering opportunities
+- Global career opportunities
+- Remote opportunities
+
+## Opportunity Discovery
+
+Users can explore opportunities by category, location, work mode, funding, deadline and other relevant criteria.
+
+GoGlobal aims to make global opportunities more accessible, discoverable and actionable for students.
+
+## Public Pages
+
+- https://www.officalgoglobal.in/
+- https://www.officalgoglobal.in/explore
+- https://www.officalgoglobal.in/categories
+- https://www.officalgoglobal.in/events
+- https://www.officalgoglobal.in/about
+- https://www.officalgoglobal.in/contact
+
+## Contact
+
+Website: https://www.officalgoglobal.in/contact
