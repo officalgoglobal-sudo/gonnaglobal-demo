@@ -111,7 +111,7 @@ useEffect(() => {
   <div className="max-w-xl">
 
     <p className="text-sm font-medium uppercase tracking-[0.3em] text-[#8B7355]">
-      GoGlobal
+      Gonn'a Global
     </p>
 
     <h1 className="mt-8 text-6xl font-bold leading-[1.02] tracking-tight text-[#2B1D16]">

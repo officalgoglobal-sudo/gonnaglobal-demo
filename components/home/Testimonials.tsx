@@ -3,7 +3,7 @@ const testimonials = [
       name: "Aarav Mehta",
       role: "Computer Science Student",
       quote:
-        "GoGlobal helped me discover research programs and internships I would have never found on my own.",
+        "Gonn'a Global helped me discover research programs and internships I would have never found on my own.",
     },
     {
       name: "Sophia Chen",
@@ -15,7 +15,7 @@ const testimonials = [
       name: "Daniel Kim",
       role: "Undergraduate Researcher",
       quote:
-        "I found an international fellowship through GoGlobal within my first week of using it.",
+        "I found an international fellowship through Gonn'a Global within my first week of using it.",
     },
   ]
   

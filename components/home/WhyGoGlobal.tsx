@@ -13,7 +13,7 @@ import {
     },
     {
       title: "No Noise",
-      desc: "Skip endless searching. GoGlobal filters the clutter and surfaces only high-quality opportunities.",
+      desc: "Skip endless searching. Gonn'a Global filters the clutter and surfaces only high-quality opportunities.",
       icon: Sparkles,
     },
     {
@@ -37,7 +37,7 @@ import {
         <div className="max-w-3xl">
   
           <p className="text-sm font-medium uppercase tracking-[0.25em] text-[#D6B08C]">
-            Why GoGlobal
+            Why Gonn'a Global
           </p>
   
           <h2 className="mt-4 text-3xl font-bold leading-tight tracking-tight sm:text-4xl xl:text-5xl">

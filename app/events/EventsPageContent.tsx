@@ -117,7 +117,7 @@ export default function EventsPage() {
 
         We're currently preparing the events platform.
         Once launched, you'll be able to discover and register
-        for global events directly through GoGlobal.
+        for global events directly through Gonn'a Global.
 
       </p>
 

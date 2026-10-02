@@ -4,7 +4,7 @@ import HomePageContent from "./HomePageContent"
 export const metadata: Metadata = {
   title: "Discover Global Opportunities",
   description:
-    "Discover internships, fellowships, scholarships, hackathons, conferences and other global opportunities from around the world with GoGlobal.",
+    "Discover internships, fellowships, scholarships, hackathons, conferences and other global opportunities from around the world with Gonn'a Global.",
 
   alternates: {
     canonical: "/",

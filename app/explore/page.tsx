@@ -4,7 +4,7 @@ import ExplorePageContent from "./ExplorePageContent"
 export const metadata: Metadata = {
   title: "Explore Global Opportunities",
   description:
-    "Explore internships, fellowships, scholarships, hackathons, conferences and other global opportunities from around the world with GoGlobal.",
+    "Explore internships, fellowships, scholarships, hackathons, conferences and other global opportunities from around the world with Gonn'a Global.",
 
   alternates: {
     canonical: "/explore",

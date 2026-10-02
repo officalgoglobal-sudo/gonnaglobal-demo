@@ -71,11 +71,11 @@ export default function Topbar() {
   className="hidden lg:flex items-center"
 >
   <Image
-    src="/goglobal-logo.png"
-    alt="GoGlobal"
-    width={100}
+    src="/gonna-global-logo.png"
+    alt="Gonn'a Global"
+    width={120}
     height={50}
-    className="object-contain"
+    className="object-contain h-auto w-[110px]"
     priority
   />
 </Link>
@@ -179,11 +179,11 @@ export default function Topbar() {
 
 <Link href="/">
   <Image
-    src="/goglobal-logo.png"
-    alt="GoGlobal"
-    width={80}
+    src="/gonna-global-logo.png"
+    alt="Gonn'a Global"
+    width={90}
     height={40}
-    className="object-contain"
+    className="object-contain h-auto w-[80px]"
     priority
   />
 </Link>

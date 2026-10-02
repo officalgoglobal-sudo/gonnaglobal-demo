@@ -4,7 +4,7 @@ import TermsPageContent from "./TermsPageContent"
 export const metadata: Metadata = {
   title: "Terms & Conditions",
   description:
-    "Read the GoGlobal Terms & Conditions covering use of the platform, accounts, opportunities, content and services.",
+    "Read the Gonn'a Global Terms & Conditions covering use of the platform, accounts, opportunities, content and services.",
 
   alternates: {
     canonical: "/terms",

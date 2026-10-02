@@ -4,7 +4,7 @@ import EventsPageContent from "./EventsPageContent"
 export const metadata: Metadata = {
   title: "Global Events & Opportunities",
   description:
-    "Discover global conferences, webinars, workshops, networking sessions, competitions and community events with GoGlobal.",
+    "Discover global conferences, webinars, workshops, networking sessions, competitions and community events with Gonn'a Global.",
 
   alternates: {
     canonical: "/events",

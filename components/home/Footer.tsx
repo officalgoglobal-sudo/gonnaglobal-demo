@@ -17,22 +17,14 @@ export default function Footer() {
         {/* BRAND */}
 
         <div>
-        <div className="flex items-center gap-3">
-
+        <div className="flex items-center">
 <Image
-  src="/goglobal-icon.png"
-  alt="GoGlobal"
-  width={38}
-  height={38}
-  className="object-contain"
+  src="/gonna-global-logo.png"
+  alt="Gonn'a Global"
+  width={140}
+  height={55}
+  className="object-contain h-auto w-[120px]"
 />
-
-<h2 className="text-2xl font-semibold tracking-[-0.04em] text-[#d7c4b4] sm:text-3xl">
-
-  Go<span className="text-[#2563EB]">Global</span>
-
-</h2>
-
 </div>
 
           <p className="mt-5 max-w-sm text-[14px] leading-7 text-[#6B5B52] sm:mt-6 sm:text-[15px]">
@@ -179,7 +171,7 @@ export default function Footer() {
 </a>
 
   <a
-    href="https://x.com/officalGoGlobal"
+    href="https://x.com/offcialgoglobal"
     target="_blank"
     rel="noopener noreferrer"
     className="group flex items-center gap-3 text-left transition-all duration-300 hover:translate-x-1 hover:text-[#2563EB]"
@@ -202,7 +194,7 @@ export default function Footer() {
       <div className="mt-10 flex flex-col gap-4 border-t border-[#E7DDD1] pt-8 text-sm text-[#8B7355] md:mt-12 md:flex-row md:items-center md:justify-between lg:items-center">
 
         <p>
-          © 2026 GoGlobal. All rights reserved.
+          © 2026 Gonn'a Global. All rights reserved.
         </p>
 
         <p>

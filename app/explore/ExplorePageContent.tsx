@@ -254,7 +254,7 @@ const [selectedEcosystems, setSelectedEcosystems] =
   <div className="mt-5 space-y-5 text-[15px] leading-7 text-[#6B5B52]">
 
     <p>
-      GoGlobal helps students discover internships, scholarships,
+      Gonn'a Global helps students discover internships, scholarships,
       fellowships, research programs, conferences, hackathons,
       competitions, mentorships, startup programs and other
       opportunities from around the world. Instead of searching
@@ -267,7 +267,7 @@ const [selectedEcosystems, setSelectedEcosystems] =
       category, location, work mode, funding, deadline and career
       domain. Whether you are looking for a remote internship,
       a fully funded scholarship, an international fellowship,
-      a research program or a global conference, GoGlobal makes
+      a research program or a global conference, Gonn'a Global makes
       it easier to discover programs that match your interests
       and career goals.
     </p>

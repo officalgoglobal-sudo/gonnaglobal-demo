@@ -17,8 +17,8 @@ export const metadata: Metadata = {
   ),
 
   title: {
-    default: "GoGlobal | Discover Global Opportunities",
-    template: "%s | GoGlobal",
+    default: "Gonn'a Global | Discover Global Opportunities",
+    template: "%s | Gonn'a Global",
   },
 
   description:
@@ -34,18 +34,18 @@ export const metadata: Metadata = {
     "research programs",
     "student opportunities",
     "international opportunities",
-    "GoGlobal",
+    "Gonn'a Global",
   ],
 
   icons: {
-    icon: "/goglobal-icon.png",
+    icon: "/gonna-global-logo.png",
   },
 
   openGraph: {
-    title: "GoGlobal",
+    title: "Gonn'a Global",
     description:
       "Discover opportunities beyond borders.",
-    siteName: "GoGlobal",
+    siteName: "Gonn'a Global",
     type: "website",
   },
 }

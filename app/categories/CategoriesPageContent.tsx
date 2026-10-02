@@ -140,7 +140,7 @@ export default function CategoriesPage() {
 
 <p className="mx-auto mt-5 max-w-2xl leading-8 text-[#6B5B52]">
 
-  We're continuously expanding GoGlobal to include more
+  We're continuously expanding Gonn'a Global to include more
   industries, career paths and opportunity types so every
   student can discover opportunities tailored to their ambitions.
 

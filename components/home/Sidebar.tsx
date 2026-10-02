@@ -84,11 +84,11 @@ useState("")
       <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-[92px] flex-col items-center border-r border-[#E7DDD1] bg-[#F8F5F0] py-8">
 
       <div
-  className="mt-16 rotate-[-90deg] text-[52px] font-semibold tracking-[-0.04em]"
-  aria-label="GoGlobal"
+  className="mt-20 rotate-[-90deg] text-[38px] font-semibold tracking-[-0.04em] flex gap-2 whitespace-nowrap"
+  aria-label="Gonn'a Global"
 >
   <span className="text-[#d7c4b4]">
-    Go
+    Gonn'a
   </span>
 
   <span className="text-[#2563EB]">
@@ -177,11 +177,12 @@ useState("")
   className="mb-4"
 >
   <Image
-    src="/goglobal-icon.png"
-    alt="GoGlobal"
-    width={42}
-    height={42}
+    src="/gonna-global-logo.png"
+    alt="Gonn'a Global"
+    width={65}
+    height={32}
     priority
+    className="h-auto w-[58px] object-contain"
   />
 </Link>
 

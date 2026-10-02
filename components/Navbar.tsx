@@ -26,7 +26,7 @@ export default function Navbar() {
   {/* 
   <Image
     src="/logo.png"
-    alt="GoGlobal"
+    alt="Gonn'a Global"
     width={140}
     height={40}
   />
