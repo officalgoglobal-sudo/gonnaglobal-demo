@@ -182,7 +182,7 @@ useState("")
     width={65}
     height={32}
     priority
-    className="h-auto w-[58px] object-contain"
+    className="h-auto w-[58px] object-contain [mix-blend-mode:multiply]"
   />
 </Link>
 

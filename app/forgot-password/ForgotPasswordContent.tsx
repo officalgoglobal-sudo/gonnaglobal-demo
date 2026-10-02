@@ -16,7 +16,7 @@ const inputCls =
 function Logo() {
   return (
     <div className="flex justify-center">
-      <Image src="/gonna-global-logo.png" alt="Gonn'a Global" width={150} height={75} className="h-auto w-[120px] object-contain" priority />
+      <Image src="/gonna-global-logo.png" alt="Gonn'a Global" width={150} height={75} className="h-auto w-[120px] object-contain [mix-blend-mode:multiply]" priority />
     </div>
   )
 }

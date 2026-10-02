@@ -133,7 +133,7 @@ function SignupPageContent() {
 
         <div className="relative z-10 flex h-full flex-col px-9 py-8 xl:px-12 xl:py-10">
           <div>
-            <Image src="/gonna-global-logo.png" alt="Gonn'a Global" width={150} height={80} className="h-auto w-[130px] object-contain" priority />
+            <Image src="/gonna-global-logo.png" alt="Gonn'a Global" width={150} height={80} className="h-auto w-[130px] object-contain [mix-blend-mode:multiply]" priority />
             <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.28em] text-gray-500">LEARN · APPLY · CONNECT · GONN'A GLOBAL</p>
             <h1 className="mt-3 text-[38px] font-black leading-[1.06] tracking-tight text-gray-900 xl:text-[46px]">
               Same<br />Curiosity.<br /><span style={{ color: "#0055FF" }}>Bigger Horizons.</span>
@@ -184,7 +184,7 @@ function SignupPageContent() {
 
         <div className="mx-auto w-full max-w-[500px] py-4">
           <div className="mb-4 flex justify-center">
-            <Image src="/gonna-global-logo.png" alt="Gonn'a Global" width={150} height={75} className="h-auto w-[130px] object-contain" priority />
+            <Image src="/gonna-global-logo.png" alt="Gonn'a Global" width={150} height={75} className="h-auto w-[130px] object-contain [mix-blend-mode:multiply]" priority />
           </div>
           <h2 className="text-center text-[26px] font-bold tracking-tight text-gray-900" style={{ fontFamily: "Georgia, serif" }}>Create Your Account</h2>
           <p className="mt-1 text-center text-[13px] text-gray-500">Join Gonn&apos;a Global and start your journey today.</p>

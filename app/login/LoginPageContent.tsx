@@ -144,7 +144,7 @@ function LoginPageContent() {
               alt="Gonn'a Global"
               width={160}
               height={80}
-              className="h-auto w-[150px] object-contain"
+              className="h-auto w-[150px] object-contain [mix-blend-mode:multiply]"
               priority
             />
 
@@ -259,7 +259,7 @@ function LoginPageContent() {
               alt="Gonn'a Global"
               width={180}
               height={90}
-              className="mx-auto h-auto w-[160px] object-contain"
+              className="mx-auto h-auto w-[160px] object-contain [mix-blend-mode:multiply]"
               priority
             />
             <p className="mt-3 text-[8px] font-bold tracking-[0.25em] text-gray-400">

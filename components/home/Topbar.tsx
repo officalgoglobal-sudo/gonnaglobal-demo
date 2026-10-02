@@ -75,7 +75,7 @@ export default function Topbar() {
     alt="Gonn'a Global"
     width={120}
     height={50}
-    className="object-contain h-auto w-[110px]"
+    className="object-contain h-auto w-[110px] [mix-blend-mode:multiply]"
     priority
   />
 </Link>
@@ -183,7 +183,7 @@ export default function Topbar() {
     alt="Gonn'a Global"
     width={90}
     height={40}
-    className="object-contain h-auto w-[80px]"
+    className="object-contain h-auto w-[80px] [mix-blend-mode:multiply]"
     priority
   />
 </Link>

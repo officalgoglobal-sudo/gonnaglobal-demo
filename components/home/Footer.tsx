@@ -23,7 +23,7 @@ export default function Footer() {
   alt="Gonn'a Global"
   width={140}
   height={55}
-  className="object-contain h-auto w-[120px]"
+  className="object-contain h-auto w-[120px] [mix-blend-mode:multiply]"
 />
 </div>
 
