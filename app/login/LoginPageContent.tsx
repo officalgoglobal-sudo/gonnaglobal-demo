@@ -139,14 +139,7 @@ function LoginPageContent() {
           {/* TOP: logo + tagline + heading + description + icons */}
           <div>
             {/* Gonn'a Global logo — left panel */}
-            <Image
-              src="/gonna-global-logo.png"
-              alt="Gonn'a Global"
-              width={160}
-              height={80}
-              className="h-auto w-[150px] object-contain [mix-blend-mode:multiply]"
-              priority
-            />
+            <img src="/gonna-global-logo.png" alt="Gonn'a Global" className="h-auto w-[150px] object-contain" />
 
             <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.28em] text-gray-500">
               LEARN · APPLY · CONNECT · GONN'A GLOBAL
@@ -254,14 +247,7 @@ function LoginPageContent() {
         <div className="mx-auto flex w-full max-w-[420px] flex-1 flex-col justify-center py-10">
           <div className="text-center">
             {/* Gonn'a Global logo — actual brand image */}
-            <Image
-              src="/gonna-global-logo.png"
-              alt="Gonn'a Global"
-              width={180}
-              height={90}
-              className="mx-auto h-auto w-[160px] object-contain [mix-blend-mode:multiply]"
-              priority
-            />
+            <img src="/gonna-global-logo.png" alt="Gonn'a Global" className="mx-auto h-auto w-[160px] object-contain" />
             <p className="mt-3 text-[8px] font-bold tracking-[0.25em] text-gray-400">
               OPPORTUNITIES BEYOND BORDERS
             </p>

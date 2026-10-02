@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 100" fill="none">
+  <!-- Left G circle (tan/beige) -->
+  <circle cx="78" cy="38" r="28" stroke="#C4A882" stroke-width="8" fill="none"/>
+  <!-- Left G horizontal bar -->
+  <rect x="78" y="33" width="20" height="8" fill="#C4A882" rx="1"/>
+
+  <!-- Right G circle (blue) -->
+  <circle cx="108" cy="38" r="28" stroke="#2563EB" stroke-width="8" fill="none"/>
+  <!-- Right G horizontal bar -->
+  <rect x="108" y="33" width="20" height="8" fill="#2563EB" rx="1"/>
+
+  <!-- Text: Gonn'a (tan) -->
+  <text x="30" y="88" font-family="'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="500" fill="#C4A882" letter-spacing="0.3">Gonn&#x2019;a</text>
+  <!-- Text: Global (blue) -->
+  <text x="110" y="88" font-family="'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="500" fill="#2563EB" letter-spacing="0.3">Global</text>
+</svg>

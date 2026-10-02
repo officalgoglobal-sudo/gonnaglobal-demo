@@ -18,13 +18,7 @@ export default function Footer() {
 
         <div>
         <div className="flex items-center">
-<Image
-  src="/gonna-global-logo.png"
-  alt="Gonn'a Global"
-  width={140}
-  height={55}
-  className="object-contain h-auto w-[120px] [mix-blend-mode:multiply]"
-/>
+<img src="/gonna-global-logo.png" alt="Gonn'a Global" className="object-contain h-auto w-[120px]" />
 </div>
 
           <p className="mt-5 max-w-sm text-[14px] leading-7 text-[#6B5B52] sm:mt-6 sm:text-[15px]">

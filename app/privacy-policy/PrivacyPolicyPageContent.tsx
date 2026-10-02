@@ -261,7 +261,7 @@ export default function PrivacyPolicyPageContent() {
           <footer className="mt-10 rounded-[16px] border border-gray-200 bg-white p-8 shadow-sm">
             <div className="grid grid-cols-4 gap-8">
               <div>
-                <Image src="/gonna-global-logo.png" alt="Gonna Global" width={120} height={60} className="h-auto w-[100px] object-contain" />
+                <img src="/gonna-global-logo.png" alt="Gonna Global" className="h-auto w-[100px] object-contain" />
                 <p className="mt-2 text-[12px] italic text-gray-500" style={{ fontFamily: "cursive" }}>A global you tomorrow.</p>
               </div>
               <div>

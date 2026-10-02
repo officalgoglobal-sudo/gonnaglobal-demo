@@ -70,14 +70,7 @@ export default function Topbar() {
   href="/"
   className="hidden lg:flex items-center"
 >
-  <Image
-    src="/gonna-global-logo.png"
-    alt="Gonn'a Global"
-    width={120}
-    height={50}
-    className="object-contain h-auto w-[110px] [mix-blend-mode:multiply]"
-    priority
-  />
+  <img src="/gonna-global-logo.png" alt="Gonn'a Global" className="object-contain h-auto w-[110px]" />
 </Link>
         {/* DESKTOP NAV */}
   
@@ -178,14 +171,7 @@ export default function Topbar() {
         <div className="flex items-center justify-between w-full lg:hidden">
 
 <Link href="/">
-  <Image
-    src="/gonna-global-logo.png"
-    alt="Gonn'a Global"
-    width={90}
-    height={40}
-    className="object-contain h-auto w-[80px] [mix-blend-mode:multiply]"
-    priority
-  />
+  <img src="/gonna-global-logo.png" alt="Gonn'a Global" className="object-contain h-auto w-[80px]" />
 </Link>
 
 <button

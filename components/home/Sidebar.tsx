@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -176,14 +176,7 @@ useState("")
   href="/about"
   className="mb-4"
 >
-  <Image
-    src="/gonna-global-logo.png"
-    alt="Gonn'a Global"
-    width={65}
-    height={32}
-    priority
-    className="h-auto w-[58px] object-contain [mix-blend-mode:multiply]"
-  />
+  <img src="/gonna-global-logo.png" alt="Gonn'a Global" className="h-auto w-[58px] object-contain" />
 </Link>
 
       </aside>
