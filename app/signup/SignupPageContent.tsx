@@ -466,6 +466,14 @@ function SignupPageContent() {
               Already have an account?{" "}
               <Link href="/login" className="font-semibold text-[#0066FF] hover:underline">Log In</Link>
             </p>
+
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-center text-[11px] font-medium text-gray-400 pb-6">
+              <Link href="/terms" className="transition hover:text-gray-600">Terms</Link>
+              <span>&bull;</span>
+              <Link href="/privacy-policy" className="transition hover:text-gray-600">Privacy Policy</Link>
+              <span>&bull;</span>
+              <Link href="/contact" className="transition hover:text-gray-600">Contact</Link>
+            </div>
           </div>
         </div>
       </section>

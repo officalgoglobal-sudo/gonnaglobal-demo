@@ -390,6 +390,14 @@ function LoginPageContent() {
           <p className="mt-8 text-center text-[12px] text-gray-600">
             Don't have an account? <Link href="/signup" className="font-semibold text-[#0066FF] hover:underline">Sign Up</Link>
           </p>
+
+          <div className="mt-12 flex flex-wrap items-center justify-center gap-3 text-center text-[11px] font-medium text-gray-400">
+            <Link href="/terms" className="transition hover:text-gray-600">Terms</Link>
+            <span>&bull;</span>
+            <Link href="/privacy-policy" className="transition hover:text-gray-600">Privacy Policy</Link>
+            <span>&bull;</span>
+            <Link href="/contact" className="transition hover:text-gray-600">Contact</Link>
+          </div>
         </div>
       </section>
     </main>
