@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useState } from "react"
 import Sidebar from "@/components/home/Sidebar"
 import Topbar from "@/components/home/Topbar"
+import Footer from "@/components/home/Footer"
 import { Mail, Handshake, AlertTriangle, Clock, ArrowRight, Send, ChevronDown, Users } from "lucide-react"
 
 export default function ContactPage() {
@@ -30,29 +31,35 @@ export default function ContactPage() {
         <Topbar />
         <section className="px-5 py-8 sm:px-8 lg:px-10">
 
-          {/* Breadcrumb */}
-          <p className="mb-4 text-[12px] text-gray-500">
-            <Link href="/" className="hover:underline">Home</Link>
-            <span className="mx-1.5 text-gray-400">›</span>
-            Contact
-          </p>
+          {/* Hero — full-width image background */}
+          <div className="relative overflow-hidden rounded-[20px] shadow-sm" style={{ minHeight: "240px" }}>
+            {/* Background photo — clean Florence panorama, no baked-in text */}
+            <img
+              src="/login-bg.jpg"
+              alt="Contact background"
+              className="absolute inset-0 h-full w-full object-cover"
+              style={{ objectPosition: "center 35%" }}
+            />
+            {/* Strong gradient overlay for text legibility */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/20" />
+            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/50 to-transparent" />
 
-          {/* Hero row */}
-          <div className="flex items-start justify-between">
-            <div className="max-w-xl">
-              <h1 className="text-[42px] font-black leading-tight tracking-tight text-gray-900">
-                Let&apos;s <span className="text-[#0066FF]">connect.</span>
-              </h1>
-              <p className="mt-2 text-[14px] leading-relaxed text-gray-600">
-                Have a question, partnership idea, or need help finding an opportunity?<br />We&apos;re here to help.
-              </p>
-            </div>
-            {/* Globe illustration */}
-            <div className="relative hidden lg:block">
-              <Image src="/contact-globe.jpg" alt="Globe" width={340} height={240} className="h-auto w-[320px] rounded-2xl object-contain" />
+            {/* Content over image */}
+            <div className="relative z-10 flex items-center justify-between px-8 py-10 sm:px-10 sm:py-12">
+              <div className="max-w-xl">
+                {/* Eyebrow */}
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/60">Contact Us</p>
+                <h1 className="text-[38px] font-black leading-tight tracking-tight text-white sm:text-[46px]" style={{ fontFamily: "Georgia, serif" }}>
+                  Let&apos;s <span className="text-[#60a5fa]">connect.</span>
+                </h1>
+                <p className="mt-3 max-w-sm text-[14px] leading-relaxed text-white/75">
+                  Have a question, partnership idea, or need help finding an opportunity? We&apos;re here to help.
+                </p>
+              </div>
+              {/* Handwritten note — right side */}
               <div
-                className="absolute bottom-4 right-4 -rotate-[8deg] text-[18px] leading-tight text-gray-800"
-                style={{ fontFamily: "'Caveat','Comic Sans MS',cursive" }}
+                className="hidden lg:block -rotate-[6deg] text-[24px] leading-snug text-white/85 mr-8"
+                style={{ fontFamily: "'Caveat','Comic Sans MS',cursive", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}
               >
                 A global<br />you tomorrow.
               </div>
@@ -217,6 +224,7 @@ export default function ContactPage() {
           </div>
 
         </section>
+        <Footer />
       </div>
     </main>
   )

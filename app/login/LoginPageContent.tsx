@@ -8,7 +8,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { signInWithEmailAndPassword, sendPasswordResetEmail, signInWithPopup } from "firebase/auth"
 import { doc, getDoc } from "firebase/firestore"
 import { auth, db, googleProvider } from "@/lib/firebase"
-import { GraduationCap, Users, FileText, Globe, Mail, Lock, EyeOff, ArrowRight, Building2 } from "lucide-react"
+import { GraduationCap, Users, FileText, Globe, Mail, Lock, EyeOff, ArrowRight, Building2, Sparkles } from "lucide-react"
 
 function LoginPageContent() {
   const router = useRouter()
@@ -108,130 +108,18 @@ function LoginPageContent() {
 
   return (
     <main className="flex min-h-screen w-full bg-white font-sans text-gray-900">
-      {/* LEFT SIDE */}
-      <section className="relative hidden w-1/2 flex-col overflow-hidden lg:flex" style={{ backgroundColor: "#e8f4fc" }}>
-
-        {/* ── PHOTO: strictly bottom 47% of the panel ── */}
-        <div
-          className="absolute bottom-0 left-0 right-0"
-          style={{
-            height: "47%",
-            backgroundImage: "url('/login-bg.jpg')",
-            backgroundSize: "cover",
-            backgroundPosition: "center 20%",
-          }}
-        >
-          {/* Top fade — photo dissolves into the light blue above */}
-          <div
-            className="absolute inset-x-0 top-0"
-            style={{ height: "45%", background: "linear-gradient(to bottom, #e8f4fc 0%, rgba(232,244,252,0) 100%)" }}
-          />
-          {/* Bottom dark overlay for stats readability */}
-          <div
-            className="absolute inset-x-0 bottom-0"
-            style={{ height: "40%", background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%)" }}
-          />
-        </div>
-
-        {/* ── CONTENT LAYER ── */}
-        <div className="relative z-10 flex h-full flex-col px-9 py-8 xl:px-12 xl:py-10">
-
-          {/* TOP: logo + tagline + heading + description + icons */}
-          <div>
-            {/* Gonn'a Global logo — left panel */}
-            <img src="/gonna-global-logo.png" alt="Gonn'a Global" className="h-auto w-[150px] object-contain" />
-
-            <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.28em] text-gray-500">
-              LEARN · APPLY · CONNECT · GONN'A GLOBAL
-            </p>
-
-            <h1 className="mt-3 text-[38px] font-black leading-[1.08] tracking-tight text-gray-900 xl:text-[46px]">
-              A Brighter<br />
-              Tomorrow<br />
-              <span style={{ color: "#0055FF" }}>Knows No Borders.</span>
-            </h1>
-
-            <p className="mt-3 max-w-xs text-[13px] leading-relaxed text-gray-700">
-              Your global journey starts here. Explore opportunities, get guidance, and turn your dreams into reality.
-            </p>
-
-            {/* Feature icon grid */}
-            <div className="mt-6 flex w-full justify-between">
-              <div className="flex flex-col items-center gap-2">
-                <div className="flex h-[56px] w-[56px] items-center justify-center rounded-[16px] shadow-sm" style={{ backgroundColor: "#dbeeff", color: "#2563eb" }}>
-                  <GraduationCap className="h-6 w-6" strokeWidth={1.6} />
-                </div>
-                <p className="text-center text-[10.5px] font-medium leading-tight text-gray-800">Global<br />Opportunities</p>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <div className="flex h-[56px] w-[56px] items-center justify-center rounded-[16px] shadow-sm" style={{ backgroundColor: "#d2f5e3", color: "#059669" }}>
-                  <Users className="h-6 w-6" strokeWidth={1.6} />
-                </div>
-                <p className="text-center text-[10.5px] font-medium leading-tight text-gray-800">Expert<br />Mentorship</p>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <div className="flex h-[56px] w-[56px] items-center justify-center rounded-[16px] shadow-sm" style={{ backgroundColor: "#ecdffe", color: "#7c3aed" }}>
-                  <FileText className="h-6 w-6" strokeWidth={1.6} />
-                </div>
-                <p className="text-center text-[10.5px] font-medium leading-tight text-gray-800">AI-Powered<br />Guidance</p>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <div className="flex h-[52px] w-[52px] items-center justify-center rounded-[15px] shadow-sm" style={{ backgroundColor: "#fde9c8", color: "#d97706" }}>
-                  <Globe className="h-6 w-6" strokeWidth={1.6} />
-                </div>
-                <p className="text-center text-[10.5px] font-medium leading-tight text-gray-800">A Supportive<br />Community</p>
-              </div>
-            </div>
-          </div>
-
-          {/* BOTTOM: handwritten notes + stats (sit over the photo) */}
-          <div className="relative mt-auto w-full">
-            {/* Handwritten note — left side */}
-            <div
-              className="-rotate-[8deg] text-[15px] text-gray-900"
-              style={{ fontFamily: "'Caveat', 'Comic Sans MS', cursive", display: "inline-block", marginBottom: "6px" }}
-            >
-              Students today.<br />Global leaders<br />tomorrow.
-            </div>
-
-            {/* Handwritten note — right side */}
-            <div
-              className="absolute right-6 rotate-[5deg] text-[15px] text-gray-800"
-              style={{ fontFamily: "'Caveat', 'Comic Sans MS', cursive", top: "-8px" }}
-            >
-              Same<br />Curiosity.<br />Bigger<br />Horizons.
-            </div>
-
-            {/* "A global you tomorrow." over photo bottom-right */}
-            <div
-              className="absolute bottom-8 right-3 -rotate-[4deg] text-[14px]"
-              style={{ fontFamily: "'Caveat', 'Comic Sans MS', cursive", color: "rgba(255,255,255,0.85)" }}
-            >
-              A global you<br />tomorrow.
-            </div>
-
-            {/* Stats row — white on dark photo gradient */}
-            <div className="flex items-end justify-between pb-5 pt-28 text-white xl:pt-32">
-              <div className="text-center">
-                <p className="text-[18px] font-bold xl:text-[20px]">180+</p>
-                <p className="text-[9px] text-white/75 xl:text-[10px]">Countries</p>
-              </div>
-              <div className="text-center">
-                <p className="text-[18px] font-bold xl:text-[20px]">10K+</p>
-                <p className="text-[9px] text-white/75 xl:text-[10px]">Opportunities</p>
-              </div>
-              <div className="text-center">
-                <p className="text-[18px] font-bold xl:text-[20px]">50K+</p>
-                <p className="text-[9px] text-white/75 xl:text-[10px]">Students</p>
-              </div>
-              <div className="text-center">
-                <p className="text-[18px] font-bold xl:text-[20px]">4.9★</p>
-                <p className="text-[9px] text-white/75 xl:text-[10px]">User Rating</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* LEFT PANEL — scrolls with page */}
+      <section 
+        className="hidden w-1/2 flex-shrink-0 self-stretch overflow-hidden lg:block" 
+        style={{
+          backgroundImage: "url('/auth-bg.png')",
+          backgroundSize: "100% auto",
+          backgroundPosition: "top center",
+          backgroundRepeat: "no-repeat",
+          backgroundColor: "#e8f4fc",
+          minHeight: "100vh",
+        }}
+      />
 
       {/* RIGHT SIDE */}
       <section className="flex w-full flex-col p-6 sm:p-8 lg:w-1/2 xl:p-12">
@@ -350,11 +238,11 @@ function LoginPageContent() {
             <div className="h-[1px] flex-1 bg-gray-200"></div>
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:gap-2">
+          <div className="flex flex-col gap-3">
             <button
               onClick={handleGoogleLogin}
               type="button"
-              className="flex flex-1 items-center justify-center gap-2 rounded-[10px] border border-gray-200 py-3 text-[11px] font-medium text-gray-700 transition hover:bg-gray-50"
+              className="flex w-full items-center justify-center gap-2 rounded-[10px] border border-gray-200 py-3 text-[12px] font-medium text-gray-700 transition hover:bg-gray-50"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="h-4 w-4 shrink-0">
                 <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12S17.4 12 24 12c3 0 5.7 1.1 7.8 3l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z" />
@@ -362,28 +250,7 @@ function LoginPageContent() {
                 <path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.5-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.3 0-9.7-3.3-11.3-8l-6.5 5C9.5 39.5 16.2 44 24 44z" />
                 <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1.1 3.1-3.4 5.5-6.5 6.9l6.2 5.2C39.7 36.3 44 30.7 44 24c0-1.3-.1-2.3-.4-3.5z" />
               </svg>
-              <span className="whitespace-nowrap">Continue with Google</span>
-            </button>
-            <button
-              type="button"
-              className="flex flex-1 items-center justify-center gap-2 rounded-[10px] border border-gray-200 py-3 text-[11px] font-medium text-gray-700 transition hover:bg-gray-50"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" className="h-4 w-4 shrink-0">
-                <path fill="#000000" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
-              </svg>
-              <span className="whitespace-nowrap">Continue with Apple</span>
-            </button>
-            <button
-              type="button"
-              className="flex flex-1 items-center justify-center gap-2 rounded-[10px] border border-gray-200 py-3 text-[11px] font-medium text-gray-700 transition hover:bg-gray-50"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-4 w-4 shrink-0">
-                <path fill="#F25022" d="M1 1h10v10H1z"/>
-                <path fill="#7FBA00" d="M13 1h10v10H13z"/>
-                <path fill="#00A4EF" d="M1 13h10v10H1z"/>
-                <path fill="#FFB900" d="M13 13h10v10H13z"/>
-              </svg>
-              <span className="whitespace-nowrap">Continue with Microsoft</span>
+              <span>Continue with Google</span>
             </button>
           </div>
 

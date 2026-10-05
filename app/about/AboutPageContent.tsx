@@ -2,11 +2,15 @@
 
 import Image from "next/image"
 import Link from "next/link"
+import { useState } from "react"
 import Sidebar from "@/components/home/Sidebar"
 import Topbar from "@/components/home/Topbar"
-import { Target, Eye, Heart, Globe, ArrowRight, Users } from "lucide-react"
+import Footer from "@/components/home/Footer"
+import { Target, Eye, Heart, Globe, ArrowRight, ArrowDown, Users, ChevronDown } from "lucide-react"
 
 export default function AboutPage() {
+  const [journeyOpen, setJourneyOpen] = useState(false)
+
   return (
     <main className="min-h-screen bg-gray-50 text-black">
       <Sidebar />
@@ -94,20 +98,83 @@ export default function AboutPage() {
             </div>
 
             {/* Story text */}
-            <div className="rounded-[16px] border border-gray-200 bg-white p-6 shadow-sm">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-gray-500">Our Story</p>
-              <h2 className="mt-2 text-[22px] font-black leading-tight tracking-tight text-gray-900">
+            <div className="rounded-[16px] border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300">
+              {/* EYEBROW — uppercase label, same as used across the site */}
+              <p className="text-[10.5px] font-semibold uppercase tracking-[0.28em] text-gray-400">Our Story</p>
+
+              {/* HEADING — Georgia serif, matching login/about hero headings */}
+              <h2 className="mt-2 text-[24px] font-black leading-tight tracking-tight text-gray-900" style={{ fontFamily: "Georgia, serif" }}>
                 From an Idea to a Global Community
               </h2>
-              <p className="mt-3 text-[13px] leading-relaxed text-gray-600">
+
+              {/* CONTENT — Geist Sans regular 13px, same as used throughout cards */}
+              <p className="mt-3 text-[13px] leading-[1.75] text-gray-600">
                 Gonn&apos;a Global started with a simple idea — to make global opportunities easy to find and accessible for every student. What began as a small initiative among a group of students has now grown into a vibrant community connecting learners across countries, cultures and disciplines.
               </p>
-              <p className="mt-3 text-[13px] leading-relaxed text-gray-600">
+              <p className="mt-2.5 text-[13px] leading-[1.75] text-gray-600">
                 We&apos;ve seen how the right opportunity can change a life. That&apos;s why we&apos;re committed to building a platform that bridges gaps, creates access and inspires students to think beyond borders.
               </p>
-              <Link href="/explore" className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#0066FF] hover:underline">
-                Our Journey <ArrowRight className="h-4 w-4" />
-              </Link>
+
+              {/* TOGGLE BUTTON */}
+              <button
+                onClick={() => setJourneyOpen(!journeyOpen)}
+                className="mt-4 inline-flex items-center gap-1.5 rounded-[8px] border border-[#0066FF]/20 bg-blue-50 px-3.5 py-1.5 text-[12.5px] font-semibold text-[#0066FF] transition-all duration-200 hover:bg-blue-100"
+              >
+                Our Journey
+                <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${journeyOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              {/* ── EXPANDED JOURNEY TIMELINE ── */}
+              <div
+                className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                  journeyOpen ? "max-h-[600px] opacity-100 mt-5" : "max-h-0 opacity-0 mt-0"
+                }`}
+              >
+                <div className="border-t border-gray-100 pt-5">
+                  {/* Section heading */}
+                  <p className="text-[10.5px] font-semibold uppercase tracking-[0.28em] text-[#0066FF]">Key Milestones</p>
+                  <h3 className="mt-1 text-[17px] font-bold text-gray-900" style={{ fontFamily: "Georgia, serif" }}>
+                    How We Got Here
+                  </h3>
+
+                  {/* Vertical timeline */}
+                  <div className="relative mt-5">
+                    {/* Vertical line */}
+                    <div className="absolute left-[9px] top-1 bottom-1 w-[2px] rounded-full bg-gradient-to-b from-[#0066FF] via-blue-200 to-transparent" />
+
+                    <div className="flex flex-col gap-6 pl-8">
+                      {[
+                        { year: "2023", title: "The Idea",          body: "A small team with a big dream to make global opportunities accessible to every student, everywhere." },
+                        { year: "2024", title: "Platform Launch",    body: "Launched Gonn'a Global with scholarships, internships and events — reaching thousands within weeks." },
+                        { year: "2024", title: "Growing Community",  body: "Crossed 100K+ students across 50+ countries and built a thriving global network." },
+                        { year: "2025", title: "Stronger Together",  body: "Partnered with leading universities and organisations worldwide to bring more quality opportunities." },
+                        { year: "2025+", title: "A Global Impact",   body: "Continuing to expand, empower and create a more equal world for students from all backgrounds." },
+                      ].map(({ year, title, body }, i) => (
+                        <div key={i} className="relative">
+                          {/* Dot */}
+                          <div className="absolute -left-8 top-1 h-4 w-4 rounded-full border-2 border-[#0066FF] bg-white shadow-sm">
+                            <div className="absolute inset-[3px] rounded-full bg-[#0066FF]" />
+                          </div>
+
+                          {/* HEADING LEVEL — year pill */}
+                          <span
+                            className="inline-block rounded-md bg-[#0066FF]/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#0066FF]"
+                            style={{ fontFamily: "Georgia, serif" }}
+                          >
+                            {year}
+                          </span>
+
+                          {/* SUBHEADING — milestone title */}
+                          <p className="mt-1 text-[14px] font-semibold text-gray-900">{title}</p>
+
+                          {/* CONTENT — description */}
+                          <p className="mt-0.5 text-[12.5px] leading-[1.7] text-gray-500">{body}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Stats */}
@@ -175,6 +242,9 @@ export default function AboutPage() {
           </div>
 
         </section>
+        <div className="lg:ml-0">
+          <Footer />
+        </div>
       </div>
     </main>
   )

@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { createUserWithEmailAndPassword, sendEmailVerification, signInWithPopup } from "firebase/auth"
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore"
 import { auth, db, googleProvider } from "@/lib/firebase"
-import { User, Globe, Mail, Lock, Phone, BookOpen, GraduationCap, Building2, EyeOff, Eye, ArrowRight, ChevronDown } from "lucide-react"
+import { User, Globe, Mail, Lock, Phone, BookOpen, GraduationCap, Building2, EyeOff, Eye, ArrowRight, ChevronDown, Sparkles, Users } from "lucide-react"
 
 const COUNTRIES = [
   "Afghanistan","Argentina","Australia","Austria","Bangladesh","Belgium","Brazil","Canada","China",
@@ -124,52 +124,18 @@ function SignupPageContent() {
   return (
     <main className="flex min-h-screen w-full bg-white font-sans text-gray-900">
 
-      {/* LEFT PANEL */}
-      <section className="relative hidden w-1/2 flex-col overflow-hidden lg:flex" style={{ backgroundColor: "#e8f4fc" }}>
-        <div className="absolute bottom-0 left-0 right-0" style={{ height: "47%", backgroundImage: "url('/login-bg.jpg')", backgroundSize: "cover", backgroundPosition: "center 20%" }}>
-          <div className="absolute inset-x-0 top-0" style={{ height: "45%", background: "linear-gradient(to bottom, #e8f4fc 0%, rgba(232,244,252,0) 100%)" }} />
-          <div className="absolute inset-x-0 bottom-0" style={{ height: "40%", background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%)" }} />
-        </div>
-
-        <div className="relative z-10 flex h-full flex-col px-9 py-8 xl:px-12 xl:py-10">
-          <div>
-            <img src="/gonna-global-logo.png" alt="Gonn'a Global" className="h-auto w-[130px] object-contain" />
-            <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.28em] text-gray-500">LEARN · APPLY · CONNECT · GONN'A GLOBAL</p>
-            <h1 className="mt-3 text-[38px] font-black leading-[1.06] tracking-tight text-gray-900 xl:text-[46px]">
-              Same<br />Curiosity.<br /><span style={{ color: "#0055FF" }}>Bigger Horizons.</span>
-            </h1>
-            <p className="mt-3 max-w-xs text-[13px] leading-relaxed text-gray-700">
-              Join a global community of learners, mentors and institutions. Create your account and take the first step towards a brighter tomorrow.
-            </p>
-            <div className="mt-6 space-y-3">
-              {[
-                { icon: <Globe className="h-5 w-5" />, bg: "#dbeeff", color: "#2563eb", title: "Discover global opportunities", sub: "Universities, scholarships, internships & more." },
-                { icon: <User className="h-5 w-5" />, bg: "#d2f5e3", color: "#059669", title: "Get expert guidance", sub: "Connect with verified mentors." },
-                { icon: <BookOpen className="h-5 w-5" />, bg: "#ecdffe", color: "#7c3aed", title: "AI-powered support", sub: "Personalized recommendations." },
-                { icon: <GraduationCap className="h-5 w-5" />, bg: "#fde9c8", color: "#d97706", title: "Be part of a global community", sub: "Learn, share and grow together." },
-              ].map(({ icon, bg, color, title, sub }) => (
-                <div key={title} className="flex items-start gap-3">
-                  <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px]" style={{ backgroundColor: bg, color }}>{icon}</div>
-                  <div><p className="text-[13px] font-semibold text-gray-900">{title}</p><p className="text-[11.5px] text-gray-600">{sub}</p></div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="relative mt-auto w-full">
-            <div className="-rotate-[6deg] text-[16px] text-gray-900" style={{ fontFamily: "'Caveat','Comic Sans MS',cursive", display: "inline-block", marginBottom: "6px" }}>
-              A global you<br />tomorrow.
-            </div>
-            <div className="flex items-end justify-between pb-5 pt-16 text-white xl:pt-20">
-              {[{ num: "180+", label: "Countries" }, { num: "10K+", label: "Opportunities" }, { num: "50K+", label: "Students" }, { num: "4.9★", label: "User Rating" }].map(({ num, label }) => (
-                <div key={label} className="text-center">
-                  <p className="text-[18px] font-bold xl:text-[20px]">{num}</p>
-                  <p className="text-[9px] text-white/75 xl:text-[10px]">{label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* LEFT PANEL — scrolls with page */}
+      <section 
+        className="hidden w-1/2 flex-shrink-0 self-stretch overflow-hidden lg:block" 
+        style={{
+          backgroundImage: "url('/auth-bg.png')",
+          backgroundSize: "100% auto",
+          backgroundPosition: "top center",
+          backgroundRepeat: "no-repeat",
+          backgroundColor: "#e8f4fc",
+          minHeight: "100vh",
+        }}
+      />
 
       {/* RIGHT PANEL */}
       <section className="flex w-full flex-col overflow-y-auto p-6 sm:p-8 lg:w-1/2 xl:p-10">
@@ -437,28 +403,15 @@ function SignupPageContent() {
               <div className="h-[1px] flex-1 bg-gray-200" />
             </div>
 
-            <div className="flex gap-2">
-              <button type="button" onClick={handleGoogleSignup} className="flex flex-1 items-center justify-center gap-2 rounded-[10px] border border-gray-200 py-2.5 text-[11px] font-medium text-gray-700 transition hover:bg-gray-50">
+            <div className="flex flex-col gap-3">
+              <button type="button" onClick={handleGoogleSignup} className="flex w-full items-center justify-center gap-2 rounded-[10px] border border-gray-200 py-3 text-[12px] font-medium text-gray-700 transition hover:bg-gray-50">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="h-4 w-4 shrink-0">
                   <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12S17.4 12 24 12c3 0 5.7 1.1 7.8 3l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z" />
                   <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 12 24 12c3 0 5.7 1.1 7.8 3l5.7-5.7C34.1 6.1 29.3 4 24 4c-7.7 0-14.3 4.3-17.7 10.7z" />
                   <path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.5-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.3 0-9.7-3.3-11.3-8l-6.5 5C9.5 39.5 16.2 44 24 44z" />
                   <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1.1 3.1-3.4 5.5-6.5 6.9l6.2 5.2C39.7 36.3 44 30.7 44 24c0-1.3-.1-2.3-.4-3.5z" />
                 </svg>
-                <span className="whitespace-nowrap">Sign up with Google</span>
-              </button>
-              <button type="button" className="flex flex-1 items-center justify-center gap-2 rounded-[10px] border border-gray-200 py-2.5 text-[11px] font-medium text-gray-700 transition hover:bg-gray-50">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" className="h-4 w-4 shrink-0">
-                  <path fill="#000" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z" />
-                </svg>
-                <span className="whitespace-nowrap">Sign up with Apple</span>
-              </button>
-              <button type="button" className="flex flex-1 items-center justify-center gap-2 rounded-[10px] border border-gray-200 py-2.5 text-[11px] font-medium text-gray-700 transition hover:bg-gray-50">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-4 w-4 shrink-0">
-                  <path fill="#F25022" d="M1 1h10v10H1z"/><path fill="#7FBA00" d="M13 1h10v10H13z"/>
-                  <path fill="#00A4EF" d="M1 13h10v10H1z"/><path fill="#FFB900" d="M13 13h10v10H13z"/>
-                </svg>
-                <span className="whitespace-nowrap">Sign up with Microsoft</span>
+                <span>Sign up with Google</span>
               </button>
             </div>
 
