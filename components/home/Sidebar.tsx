@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import { useEffect, useState } from "react"
@@ -11,22 +11,22 @@ import {
 } from "lucide-react"
 
 const NAV_ITEMS = [
-  { href: "/",              icon: House,     label: "Home" },
-  { href: "/explore",       icon: Search,    label: "Explore" },
-  { href: "/events",        icon: Calendar,  label: "Events" },
-  { href: "/communities",   icon: Users,     label: "Community" },
-  { href: "/mentorship",    icon: Users,     label: "Mentorship" },
-  { href: "/ai",            icon: Sparkles,  label: "AI" },
-  { href: "/saved",         icon: Bookmark,  label: "Saved" },
-  { href: "/applications",  icon: FileText,  label: "Applications" },
+  { href: "/", icon: House, label: "Home" },
+  { href: "/explore", icon: Search, label: "Explore" },
+  { href: "/events", icon: Calendar, label: "Events" },
+  { href: "/communities", icon: Users, label: "Community" },
+  { href: "/mentorship", icon: Users, label: "Mentorship" },
+  { href: "/ai", icon: Sparkles, label: "AI" },
+  { href: "/saved", icon: Bookmark, label: "Saved" },
+  { href: "/applications", icon: FileText, label: "Applications" },
 ]
 
 const MOBILE_NAV = [
-  { href: "/",            icon: House,    label: "Home" },
-  { href: "/explore",     icon: Search,   label: "Explore" },
-  { href: "/events",      icon: Calendar, label: "Events" },
-  { href: "/saved",       icon: Bookmark, label: "Saved" },
-  { href: "/profile",     icon: Users,    label: "Profile" },
+  { href: "/", icon: House, label: "Home" },
+  { href: "/explore", icon: Search, label: "Explore" },
+  { href: "/events", icon: Calendar, label: "Events" },
+  { href: "/saved", icon: Bookmark, label: "Saved" },
+  { href: "/profile", icon: Users, label: "Profile" },
 ]
 
 export default function Sidebar() {
@@ -52,48 +52,95 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* DESKTOP SIDEBAR */}
-      <aside className="hidden lg:flex fixed left-0 top-0 z-40 h-screen w-[80px] flex-col items-center border-r border-[#E7DDD1] bg-[#F8F5F0] py-5">
-        <Link href="/" className="mb-6 flex items-center justify-center">
-          <img src="/gonna-global-logo.png" alt="Gonna Global" className="h-auto w-[44px] object-contain" />
-        </Link>
-        <nav className="flex flex-1 flex-col items-center gap-1 w-full px-2 overflow-y-auto">
+      {/* ══════════ DESKTOP SIDEBAR ══════════ */}
+      <aside className="hidden lg:flex fixed left-0 top-0 z-40 h-screen w-[80px] flex-col items-center border-r border-[#EBEBEB] bg-[#F8F8F8] py-0">
+
+        {/* Vertical brand text — reads "Gonn'a Global" from bottom to top */}
+        <div className="flex-shrink-0 flex items-center justify-center" style={{ height: "200px" }}>
+          <Link
+            href="/"
+            className="-rotate-90 whitespace-nowrap flex items-center gap-[6px]"
+            style={{ fontFamily: "var(--font-lora), Georgia, 'Times New Roman', serif" }}
+          >
+            <span className="text-[22px] font-normal leading-none" style={{ color: "#2563EB" }}>Gonn&apos;a</span>
+            <span className="text-[22px] font-bold leading-none text-[#1A1A2E]">Global</span>
+          </Link>
+        </div>
+
+        {/* Nav items */}
+        <nav className="flex flex-1 flex-col items-center gap-0.5 w-full px-2 overflow-y-auto overflow-x-hidden py-2">
           {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
             const active = isActive(href)
             return (
-              <Link key={href} href={href}
-                className={`group flex w-full flex-col items-center gap-1 rounded-2xl px-1 py-2.5 transition-all duration-200 ${
-                  active ? "bg-[#EFE7DC] text-[#2563EB]" : "text-[#6B5B52] hover:bg-[#EFE7DC] hover:text-[#2563EB]"
+              <Link
+                key={href}
+                href={href}
+                className={`group flex w-full flex-col items-center gap-1 rounded-xl px-1 py-2.5 transition-all duration-200 ${
+                  active
+                    ? "bg-[#EBF0FF] text-[#2563EB]"
+                    : "text-[#6B6B6B] hover:bg-[#F0F0F0] hover:text-[#2563EB]"
                 }`}
               >
-                <Icon className={`h-[22px] w-[22px] transition-colors duration-200 ${active ? "text-[#2563EB]" : "text-[#6B5B52] group-hover:text-[#2563EB]"}`} strokeWidth={active ? 2.2 : 1.8} />
-                <span className={`text-[10px] font-medium leading-tight text-center ${active ? "text-[#2563EB]" : "text-[#6B5B52] group-hover:text-[#2563EB]"}`}>{label}</span>
+                <Icon
+                  className={`h-[20px] w-[20px] transition-colors duration-200 ${
+                    active ? "text-[#2563EB]" : "text-[#6B6B6B] group-hover:text-[#2563EB]"
+                  }`}
+                  strokeWidth={active ? 2.2 : 1.7}
+                />
+                <span
+                  className={`text-[9.5px] font-medium leading-tight text-center tracking-[0.01em] ${
+                    active ? "text-[#2563EB]" : "text-[#6B6B6B] group-hover:text-[#2563EB]"
+                  }`}
+                >
+                  {label}
+                </span>
               </Link>
             )
           })}
-          <button onClick={() => router.push("/upgrade")}
-            className="group mt-2 flex w-full flex-col items-center gap-1 rounded-2xl bg-[#FEF3C7] px-1 py-2.5 transition-all duration-200 hover:bg-[#FDE68A]"
+
+          {/* Upgrade to Premium */}
+          <button
+            onClick={() => router.push("/upgrade")}
+            className="group mt-2 flex w-full flex-col items-center gap-1 rounded-xl bg-[#FEF9EC] border border-[#F5DFA0] px-1 py-2.5 transition-all duration-200 hover:bg-[#FEF3C7]"
           >
-            <Crown className="h-[22px] w-[22px] text-[#D97706]" strokeWidth={1.8} />
-            <span className="text-[9.5px] font-semibold leading-tight text-center text-[#92400E]">Upgrade to<br />Premium</span>
-            <ArrowRight className="h-3 w-3 text-[#D97706]" />
+            <Crown className="h-[20px] w-[20px] text-[#B8860B]" strokeWidth={1.7} />
+            <span className="text-[9px] font-semibold leading-tight text-center text-[#92400E]">
+              Upgrade to<br />Premium
+            </span>
+            <ArrowRight className="h-3 w-3 text-[#B8860B]" />
           </button>
         </nav>
-        <div className="mt-4 flex h-9 w-9 items-center justify-center rounded-xl bg-[#EFE7DC]">
-          <span className="text-[13px] font-black tracking-tight text-[#2563EB]">GG</span>
+
+        {/* GG icon at bottom */}
+        <div className="flex-shrink-0 pb-5 pt-3">
+          <img
+            src="/goglobal-icon.png"
+            alt="GG"
+            className="w-[36px] h-auto object-contain"
+            onError={(e) => (e.currentTarget.src = "/gonna-global-logo.png")}
+          />
         </div>
       </aside>
 
-      {/* MOBILE BOTTOM TAB BAR */}
-      <nav className="fixed bottom-0 left-0 z-50 flex w-full items-center justify-around border-t border-[#E7DDD1] bg-[#F8F5F0]/95 backdrop-blur-md px-2 py-2 lg:hidden">
+      {/* ══════════ MOBILE BOTTOM TAB BAR ══════════ */}
+      <nav className="fixed bottom-0 left-0 z-50 flex w-full items-center justify-around border-t border-[#EBEBEB] bg-white/95 backdrop-blur-md px-2 py-2 lg:hidden">
         {MOBILE_NAV.map(({ href, icon: Icon, label }) => {
           const active = isActive(href)
           return (
-            <Link key={href} href={href}
-              className={`flex flex-col items-center gap-0.5 min-w-[52px] py-1 rounded-xl transition-all duration-200 ${active ? "text-[#2563EB]" : "text-[#6B5B52]"}`}
+            <Link
+              key={href}
+              href={href}
+              className={`flex flex-col items-center gap-0.5 min-w-[52px] py-1 rounded-xl transition-all duration-200 ${
+                active ? "text-[#2563EB]" : "text-[#6B6B6B]"
+              }`}
             >
-              <Icon className={`h-5 w-5 ${active ? "text-[#2563EB]" : "text-[#6B5B52]"}`} strokeWidth={active ? 2.2 : 1.8} />
-              <span className={`text-[10px] font-medium ${active ? "text-[#2563EB]" : "text-[#6B5B52]"}`}>{label}</span>
+              <Icon
+                className={`h-5 w-5 ${active ? "text-[#2563EB]" : "text-[#6B6B6B]"}`}
+                strokeWidth={active ? 2.2 : 1.7}
+              />
+              <span className={`text-[10px] font-medium ${active ? "text-[#2563EB]" : "text-[#6B6B6B]"}`}>
+                {label}
+              </span>
             </Link>
           )
         })}

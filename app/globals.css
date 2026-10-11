@@ -97,3 +97,11 @@ body {
 .react-calendar__month-view__days__day--weekend {
   color: #2B1D16;
 }
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

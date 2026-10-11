@@ -1,99 +1,62 @@
 "use client"
 import Sidebar from "@/components/home/Sidebar"
 import Topbar from "@/components/home/Topbar"
-import FilterBar from "@/components/home/FilterBar"
 import Hero from "@/components/home/Hero"
-import TrustedLogos from "@/components/home/TrustedLogos"
+import Universities from "@/components/home/Universities"
 import FeaturedOpportunities from "@/components/home/FeaturedOpportunities"
-import TrendingCategories from "@/components/home/TrendingCategories"
-import WhyGoGlobal from "@/components/home/WhyGoGlobal"
 import HowItWorks from "@/components/home/HowItWorks"
 import Testimonials from "@/components/home/Testimonials"
-import GlobalStats from "@/components/home/GlobalStats"
 import NewsletterCTA from "@/components/home/NewsletterCTA"
 import Footer from "@/components/home/Footer"
 import { useEffect, useState } from "react"
-
 import { onAuthStateChanged } from "firebase/auth"
-
-import {
-  doc,
-  getDoc,
-} from "firebase/firestore"
-
+import { doc, getDoc } from "firebase/firestore"
 import { auth, db } from "@/lib/firebase"
 
-export default function HomePage() {
+export default function HomePageContent() {
   const [fullName, setFullName] = useState("")
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [activeRole, setActiveRole] = useState("")
 
-const [isLoggedIn, setIsLoggedIn] = useState(false)
-const [activeRole, setActiveRole] = useState("")
-useEffect(() => {
-
-  const unsubscribe =
-    onAuthStateChanged(auth, async (user) => {
-
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-
         setIsLoggedIn(true)
-
-        const userDoc = await getDoc(
-          doc(db, "users", user.uid)
-        )
-
+        const userDoc = await getDoc(doc(db, "users", user.uid))
         const userData = userDoc.data()
-
         setFullName(userData?.fullName || "")
-        setActiveRole(
-          userData?.activeRole || "user"
-        )
-
+        setActiveRole(userData?.activeRole || userData?.role || "user")
       } else {
-
         setIsLoggedIn(false)
-
+        setFullName("")
+        setActiveRole("")
       }
-
     })
+    return () => unsubscribe()
+  }, [])
 
-  return () => unsubscribe()
-
-}, [])
   return (
-    <main className="min-h-screen bg-[#F8F5F0] pb-24 text-[#2B1D16] lg:pb-0">
-
+    <div className="min-h-screen bg-white text-[#1A1A2E]">
+      {/* Fixed sidebar — 80px wide */}
       <Sidebar />
 
-      <div className="lg:ml-23">
-      <Topbar />
+      {/* Everything shifts right by sidebar width */}
+      <div className="lg:ml-[80px]">
+        {/* Sticky topbar */}
+        <Topbar />
 
-<FilterBar />
-
-<div className="mx-auto max-w-[1600px]">
-
-        
-
-<Hero
-  fullName={fullName}
-  isLoggedIn={isLoggedIn}
-  userType={activeRole}
-/>
-        <TrustedLogos />
-
-{activeRole !== "recruiter" && (
-  <FeaturedOpportunities />
-)}
-
-<TrendingCategories />
-        <WhyGoGlobal />
+        {/* Page sections */}
+        <Hero fullName={fullName} isLoggedIn={isLoggedIn} userType={activeRole} />
+        <Universities />
+        <FeaturedOpportunities />
         <HowItWorks />
         <Testimonials />
-        <GlobalStats />
         <NewsletterCTA />
-        
-        </div>
         <Footer />
+
+        {/* Mobile bottom tab bar spacer */}
+        <div className="h-16 lg:hidden" />
       </div>
-    </main>
+    </div>
   )
 }

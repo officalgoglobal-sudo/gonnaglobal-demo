@@ -109,10 +109,13 @@ export default function AboutPage() {
 
               {/* CONTENT — Geist Sans regular 13px, same as used throughout cards */}
               <p className="mt-3 text-[13px] leading-[1.75] text-gray-600">
-                Gonn&apos;a Global started with a simple idea — to make global opportunities easy to find and accessible for every student. What began as a small initiative among a group of students has now grown into a vibrant community connecting learners across countries, cultures and disciplines.
+                Gonn&apos;a Global is a global opportunity platform built to help students discover opportunities beyond borders. We bring internships, scholarships, fellowships, research programs, conferences, competitions, hackathons, exchange programs, volunteering opportunities and other meaningful experiences together in one place.
               </p>
               <p className="mt-2.5 text-[13px] leading-[1.75] text-gray-600">
-                We&apos;ve seen how the right opportunity can change a life. That&apos;s why we&apos;re committed to building a platform that bridges gaps, creates access and inspires students to think beyond borders.
+                Finding the right opportunity can often mean searching through countless websites, university pages, social media platforms and communities. Gonn&apos;a Global makes that process simpler by bringing relevant opportunities, resources and experiences together so students can spend less time searching and more time exploring what&apos;s possible.
+              </p>
+              <p className="mt-2.5 text-[13px] leading-[1.75] text-gray-600">
+                We believe every student deserves the chance to learn, connect, gain experience and grow beyond their geographical boundaries. Gonn&apos;a Global is building a more connected global community where ambitious students can discover new possibilities, build meaningful connections and compete beyond borders.
               </p>
 
               {/* TOGGLE BUTTON */}
@@ -120,7 +123,7 @@ export default function AboutPage() {
                 onClick={() => setJourneyOpen(!journeyOpen)}
                 className="mt-4 inline-flex items-center gap-1.5 rounded-[8px] border border-[#0066FF]/20 bg-blue-50 px-3.5 py-1.5 text-[12.5px] font-semibold text-[#0066FF] transition-all duration-200 hover:bg-blue-100"
               >
-                Our Journey
+                More about us
                 <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${journeyOpen ? "rotate-180" : ""}`} />
               </button>
 
