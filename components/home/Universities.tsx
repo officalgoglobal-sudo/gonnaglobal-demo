@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { collection, getDocs, query, orderBy, limit } from "firebase/firestore"
@@ -117,7 +117,7 @@ export default function Universities() {
             </p>
 
             <Link
-              href="/explore?type=University"
+              href="/universities"
               className="mt-6 inline-flex items-center gap-2 rounded-full border border-[#2563EB] px-6 py-2.5 text-[13.5px] font-semibold text-[#2563EB] transition hover:bg-[#2563EB] hover:text-white"
             >
               View All Universities <span className="ml-1">→</span>
@@ -283,7 +283,7 @@ export default function Universities() {
       <div className="bg-white px-8 py-8 lg:px-12">
         <div className="mb-5 flex items-center justify-between">
           <h3 className="text-[22px] font-bold text-[#1A1A2E]">Featured Universities</h3>
-          <Link href="/explore?type=University" className="flex items-center gap-1 text-[13px] font-semibold text-[#2563EB] hover:underline">
+          <Link href="/universities" className="flex items-center gap-1 text-[13px] font-semibold text-[#2563EB] hover:underline">
             View All Universities <ChevronRight className="h-4 w-4" />
           </Link>
         </div>

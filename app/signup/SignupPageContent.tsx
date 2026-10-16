@@ -122,106 +122,105 @@ function SignupPageContent() {
   ]
 
   return (
-    <main className="flex min-h-screen w-full bg-white font-sans text-gray-900">
+    <main className="flex h-screen w-full overflow-hidden bg-white font-sans text-gray-900">
 
-      {/* LEFT PANEL — scrolls with page */}
+      {/* LEFT PANEL — fixed height, no scroll */}
       <section 
-        className="hidden w-1/2 flex-shrink-0 self-stretch overflow-hidden lg:block" 
+        className="hidden w-1/2 flex-shrink-0 h-screen overflow-hidden lg:block" 
         style={{
           backgroundImage: "url('/auth-bg.png')",
-          backgroundSize: "100% auto",
-          backgroundPosition: "top center",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
           backgroundColor: "#e8f4fc",
-          minHeight: "100vh",
         }}
       />
 
-      {/* RIGHT PANEL */}
-      <section className="flex w-full flex-col overflow-y-auto p-6 sm:p-8 lg:w-1/2 xl:p-10">
-        <div className="flex justify-end text-[13px] text-gray-600">
+      {/* RIGHT PANEL — no scroll, fits in viewport */}
+      <section className="flex h-screen w-full flex-col overflow-hidden p-4 sm:p-5 lg:w-1/2">
+        <div className="flex justify-end text-[12px] text-gray-600">
           <span className="flex items-center">
             Already have an account?
             <Link href="/login" className="ml-1.5 flex items-center font-semibold text-[#0066FF] hover:underline">
-              Log In <ArrowRight className="ml-0.5 h-3.5 w-3.5" />
+              Log In <ArrowRight className="ml-0.5 h-3 w-3" />
             </Link>
           </span>
         </div>
 
-        <div className="mx-auto w-full max-w-[500px] py-4">
-          <div className="mb-4 flex justify-center">
-            <img src="/gonna-global-logo.png" alt="Gonn'a Global" className="h-auto w-[130px] object-contain" />
+        <div className="mx-auto w-full max-w-[480px] flex flex-1 flex-col justify-center">
+          <div className="mb-1.5 flex justify-center">
+            <img src="/gonna-global-logo.png" alt="Gonn'a Global" className="h-auto w-[90px] object-contain" />
           </div>
-          <h2 className="text-center text-[26px] font-bold tracking-tight text-gray-900" style={{ fontFamily: "Georgia, serif" }}>Create Your Account</h2>
-          <p className="mt-1 text-center text-[13px] text-gray-500">Join Gonn&apos;a Global and start your journey today.</p>
+          <h2 className="text-center text-[19px] font-bold tracking-tight text-gray-900" style={{ fontFamily: "Georgia, serif" }}>Create Your Account</h2>
+          <p className="mt-0.5 text-center text-[11px] text-gray-500">Join Gonn&apos;a Global and start your journey today.</p>
 
           {/* Role cards */}
-          <div className="mt-5 grid grid-cols-3 gap-2">
+          <div className="mt-2 grid grid-cols-3 gap-1.5">
             {roleCards.map(({ id, icon, desc }) => (
               <button key={id} type="button" onClick={() => setActiveRole(id)}
-                className={`relative flex flex-col rounded-[12px] border-2 p-3 text-left transition ${activeRole === id ? "border-[#0066FF] bg-[#f0f5ff]" : "border-gray-200 bg-white hover:border-gray-300"}`}>
-                <div className={`absolute right-2.5 top-2.5 h-4 w-4 rounded-full border-2 ${activeRole === id ? "border-[#0066FF]" : "border-gray-300"}`}>
-                  {activeRole === id && <div className="absolute inset-[3px] rounded-full bg-[#0066FF]" />}
+                className={`relative flex flex-col rounded-[8px] border-2 p-2 text-left transition ${activeRole === id ? "border-[#0066FF] bg-[#f0f5ff]" : "border-gray-200 bg-white hover:border-gray-300"}`}>
+                <div className={`absolute right-1.5 top-1.5 h-3 w-3 rounded-full border-2 ${activeRole === id ? "border-[#0066FF]" : "border-gray-300"}`}>
+                  {activeRole === id && <div className="absolute inset-[2px] rounded-full bg-[#0066FF]" />}
                 </div>
-                <div className={`mb-1.5 flex h-8 w-8 items-center justify-center rounded-[9px] ${activeRole === id ? "bg-[#0066FF] text-white" : "bg-gray-100 text-gray-600"}`}>{icon}</div>
-                <p className="text-[13px] font-semibold text-gray-900">{id}</p>
-                <p className="mt-0.5 text-[11px] leading-tight text-gray-500">{desc}</p>
+                <div className={`mb-0.5 flex h-6 w-6 items-center justify-center rounded-[6px] ${activeRole === id ? "bg-[#0066FF] text-white" : "bg-gray-100 text-gray-600"}`}>{icon}</div>
+                <p className="text-[11px] font-semibold text-gray-900">{id}</p>
+                <p className="text-[9.5px] leading-tight text-gray-500">{desc}</p>
               </button>
             ))}
           </div>
 
-          <div className="mt-5 space-y-4">
+          <div className="mt-2 space-y-2">
             {/* Full Name */}
             <div>
-              <label className="mb-1.5 block text-[12px] font-medium text-gray-800">Full Name</label>
+              <label className="mb-1 block text-[11px] font-medium text-gray-800">Full Name</label>
               <div className="relative">
-                <User className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <User className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
                 <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Enter your full name"
-                  className="w-full rounded-[10px] border border-gray-200 py-2.5 pl-10 pr-4 text-[13px] outline-none transition focus:border-[#0066FF] focus:ring-1 focus:ring-[#0066FF]" />
+                  className="w-full rounded-[8px] border border-gray-200 py-2 pl-9 pr-4 text-[12px] outline-none transition focus:border-[#0066FF] focus:ring-1 focus:ring-[#0066FF]" />
               </div>
             </div>
 
             {/* Email + Phone */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="mb-1.5 block text-[12px] font-medium text-gray-800">Email Address</label>
+                <label className="mb-1 block text-[11px] font-medium text-gray-800">Email Address</label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                  <Mail className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
                   <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com"
-                    className="w-full rounded-[10px] border border-gray-200 py-2.5 pl-10 pr-3 text-[13px] outline-none transition focus:border-[#0066FF] focus:ring-1 focus:ring-[#0066FF]" />
+                    className="w-full rounded-[8px] border border-gray-200 py-2 pl-9 pr-3 text-[12px] outline-none transition focus:border-[#0066FF] focus:ring-1 focus:ring-[#0066FF]" />
                 </div>
               </div>
               <div>
-                <label className="mb-1.5 block text-[12px] font-medium text-gray-800">Phone Number <span className="font-normal text-gray-400">(Optional)</span></label>
+                <label className="mb-1 block text-[11px] font-medium text-gray-800">Phone <span className="font-normal text-gray-400">(Optional)</span></label>
                 <div className="relative">
-                  <Phone className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                  <Phone className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
                   <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+91 98765 43210"
-                    className="w-full rounded-[10px] border border-gray-200 py-2.5 pl-10 pr-3 text-[13px] outline-none transition focus:border-[#0066FF] focus:ring-1 focus:ring-[#0066FF]" />
+                    className="w-full rounded-[8px] border border-gray-200 py-2 pl-9 pr-3 text-[12px] outline-none transition focus:border-[#0066FF] focus:ring-1 focus:ring-[#0066FF]" />
                 </div>
               </div>
             </div>
 
             {/* Password + Confirm */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="mb-1.5 block text-[12px] font-medium text-gray-800">Password</label>
+                <label className="mb-1 block text-[11px] font-medium text-gray-800">Password</label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                  <Lock className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
                   <input type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="Create a password"
-                    className="w-full rounded-[10px] border border-gray-200 py-2.5 pl-10 pr-9 text-[13px] outline-none transition focus:border-[#0066FF] focus:ring-1 focus:ring-[#0066FF]" />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    {showPassword ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                    className="w-full rounded-[8px] border border-gray-200 py-2 pl-9 pr-8 text-[12px] outline-none transition focus:border-[#0066FF] focus:ring-1 focus:ring-[#0066FF]" />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+                    {showPassword ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
                   </button>
                 </div>
               </div>
               <div>
-                <label className="mb-1.5 block text-[12px] font-medium text-gray-800">Confirm Password</label>
+                <label className="mb-1 block text-[11px] font-medium text-gray-800">Confirm Password</label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                  <Lock className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
                   <input type={showConfirm ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Confirm your password"
-                    className="w-full rounded-[10px] border border-gray-200 py-2.5 pl-10 pr-9 text-[13px] outline-none transition focus:border-[#0066FF] focus:ring-1 focus:ring-[#0066FF]" />
-                  <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    {showConfirm ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                    className="w-full rounded-[8px] border border-gray-200 py-2 pl-9 pr-8 text-[12px] outline-none transition focus:border-[#0066FF] focus:ring-1 focus:ring-[#0066FF]" />
+                  <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+                    {showConfirm ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
                   </button>
                 </div>
               </div>
@@ -375,58 +374,53 @@ function SignupPageContent() {
             )}
 
             {/* Checkboxes */}
-            <div className="space-y-2">
-              <label className="flex cursor-pointer items-start gap-2.5">
+            <div className="space-y-1.5">
+              <label className="flex cursor-pointer items-start gap-2">
                 <input type="checkbox" checked={agreeTerms} onChange={e => setAgreeTerms(e.target.checked)}
-                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 text-[#0066FF] focus:ring-[#0066FF]" />
-                <span className="text-[12px] text-gray-700">
-                  I agree to the <Link href="/terms" className="font-semibold text-[#0066FF] hover:underline">Terms & Conditions</Link> and <Link href="/privacy" className="font-semibold text-[#0066FF] hover:underline">Privacy Policy</Link>.
+                  className="mt-0.5 h-3 w-3 rounded border-gray-300 text-[#0066FF] focus:ring-[#0066FF]" />
+                <span className="text-[11px] text-gray-700">
+                  I agree to the <Link href="/terms" className="font-semibold text-[#0066FF] hover:underline">Terms &amp; Conditions</Link> and <Link href="/privacy" className="font-semibold text-[#0066FF] hover:underline">Privacy Policy</Link>.
                 </span>
               </label>
-              <label className="flex cursor-pointer items-start gap-2.5">
+              <label className="flex cursor-pointer items-start gap-2">
                 <input type="checkbox" checked={agreeNewsletter} onChange={e => setAgreeNewsletter(e.target.checked)}
-                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 text-[#0066FF] focus:ring-[#0066FF]" />
-                <span className="text-[12px] text-gray-700">I would like to receive updates, newsletters and opportunity alerts.</span>
+                  className="mt-0.5 h-3 w-3 rounded border-gray-300 text-[#0066FF] focus:ring-[#0066FF]" />
+                <span className="text-[11px] text-gray-700">I would like to receive updates, newsletters and opportunity alerts.</span>
               </label>
             </div>
 
-            {error && <p className="text-[12px] font-medium text-red-500">{error}</p>}
+            {error && <p className="text-[11px] font-medium text-red-500">{error}</p>}
 
             <button type="button" onClick={handleSignup} disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-[10px] bg-[#0066FF] py-3 text-[14px] font-medium text-white transition hover:bg-[#0055e6] active:scale-[0.99] disabled:opacity-70">
+              className="flex w-full items-center justify-center gap-2 rounded-[8px] bg-[#0066FF] py-2.5 text-[13px] font-medium text-white transition hover:bg-[#0055e6] active:scale-[0.99] disabled:opacity-70">
               {loading ? "Creating Account..." : "Create Account"} <ArrowRight className="h-4 w-4" />
             </button>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <div className="h-[1px] flex-1 bg-gray-200" />
               <span className="text-[10px] font-medium uppercase tracking-widest text-gray-400">OR</span>
               <div className="h-[1px] flex-1 bg-gray-200" />
             </div>
 
-            <div className="flex flex-col gap-3">
-              <button type="button" onClick={handleGoogleSignup} className="flex w-full items-center justify-center gap-2 rounded-[10px] border border-gray-200 py-3 text-[12px] font-medium text-gray-700 transition hover:bg-gray-50">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="h-4 w-4 shrink-0">
-                  <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12S17.4 12 24 12c3 0 5.7 1.1 7.8 3l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z" />
-                  <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 12 24 12c3 0 5.7 1.1 7.8 3l5.7-5.7C34.1 6.1 29.3 4 24 4c-7.7 0-14.3 4.3-17.7 10.7z" />
-                  <path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.5-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.3 0-9.7-3.3-11.3-8l-6.5 5C9.5 39.5 16.2 44 24 44z" />
-                  <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1.1 3.1-3.4 5.5-6.5 6.9l6.2 5.2C39.7 36.3 44 30.7 44 24c0-1.3-.1-2.3-.4-3.5z" />
-                </svg>
-                <span>Sign up with Google</span>
-              </button>
+            <button type="button" onClick={handleGoogleSignup} className="flex w-full items-center justify-center gap-2 rounded-[8px] border border-gray-200 py-2.5 text-[12px] font-medium text-gray-700 transition hover:bg-gray-50">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="h-4 w-4 shrink-0">
+                <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12S17.4 12 24 12c3 0 5.7 1.1 7.8 3l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z" />
+                <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 12 24 12c3 0 5.7 1.1 7.8 3l5.7-5.7C34.1 6.1 29.3 4 24 4c-7.7 0-14.3 4.3-17.7 10.7z" />
+                <path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.5-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.3 0-9.7-3.3-11.3-8l-6.5 5C9.5 39.5 16.2 44 24 44z" />
+                <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1.1 3.1-3.4 5.5-6.5 6.9l6.2 5.2C39.7 36.3 44 30.7 44 24c0-1.3-.1-2.3-.4-3.5z" />
+              </svg>
+              <span>Sign up with Google</span>
+            </button>
+
+            <div className="flex items-center justify-between pb-4 text-[11px] text-gray-500">
+              <span>Already have an account? <Link href="/login" className="font-semibold text-[#0066FF] hover:underline">Log In</Link></span>
+              <div className="flex gap-3 text-gray-400">
+                <Link href="/terms" className="hover:text-gray-600">Terms</Link>
+                <Link href="/privacy-policy" className="hover:text-gray-600">Privacy</Link>
+                <Link href="/contact" className="hover:text-gray-600">Contact</Link>
+              </div>
             </div>
 
-            <p className="text-center text-[12px] text-gray-600">
-              Already have an account?{" "}
-              <Link href="/login" className="font-semibold text-[#0066FF] hover:underline">Log In</Link>
-            </p>
-
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-center text-[11px] font-medium text-gray-400 pb-6">
-              <Link href="/terms" className="transition hover:text-gray-600">Terms</Link>
-              <span>&bull;</span>
-              <Link href="/privacy-policy" className="transition hover:text-gray-600">Privacy Policy</Link>
-              <span>&bull;</span>
-              <Link href="/contact" className="transition hover:text-gray-600">Contact</Link>
-            </div>
           </div>
         </div>
       </section>

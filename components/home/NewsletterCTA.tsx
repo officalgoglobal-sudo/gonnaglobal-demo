@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 import { useState } from "react"
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore"
 import { db } from "@/lib/firebase"
@@ -80,7 +80,7 @@ export default function NewsletterCTA() {
             </p>
 
             {/* Email form */}
-            <div className="mt-6 flex max-w-[420px] items-center gap-3 rounded-[16px] border border-[#D0DCF5] bg-white px-4 py-3 shadow-sm">
+            <div className="mt-6 flex w-full items-center gap-3 rounded-[16px] border border-[#D0DCF5] bg-white px-4 py-3 shadow-sm">
               <Mail className="h-4 w-4 shrink-0 text-[#ABABAB]" />
               <input
                 type="email"

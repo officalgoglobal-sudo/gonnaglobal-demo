@@ -1,6 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 40" fill="none">
-  <!-- Dark/black G circle on left -->
-  <circle cx="18" cy="20" r="16" stroke="#1A1A2E" stroke-width="4.5" fill="none"/>
-  <!-- Blue G circle on right, overlapping -->  
-  <circle cx="36" cy="20" r="16" stroke="#2563EB" stroke-width="4.5" fill="#F5F4F0" fill-opacity="0"/>
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 40" fill="none">
+  <!-- Left circle outline - dark navy -->
+  <circle cx="18" cy="20" r="15" stroke="#1A1A2E" stroke-width="2.5" fill="none"/>
+  <!-- Right circle outline - blue, overlapping -->
+  <circle cx="32" cy="20" r="15" stroke="#2563EB" stroke-width="2.5" fill="none"/>
+  <!-- Left G letter in dark navy -->
+  <text x="11" y="26" font-family="Georgia, serif" font-size="17" font-weight="700" fill="#1A1A2E">G</text>
+  <!-- Right G letter in blue -->
+  <text x="25" y="26" font-family="Georgia, serif" font-size="17" font-weight="700" fill="#2563EB">G</text>
 </svg>

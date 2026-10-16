@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
@@ -11,8 +11,7 @@ const NAV_LINKS = [
   { href: "/explore", label: "Explore" },
   { href: "/categories", label: "Categories" },
   { href: "/events", label: "Events" },
-  { href: "/communities", label: "Communities" },
-  { href: "/resources", label: "Resources" },
+  { href: "/networking", label: "Network" },
   { href: "/about", label: "About" },
 ]
 
@@ -56,11 +55,11 @@ export default function Topbar() {
           <img
             src="/logo-cg.svg"
             alt="GG"
-            className="w-[44px] h-[44px] object-contain"
+            className="w-[38px] h-[30px] object-contain"
           />
-          <div className="flex items-center" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
-            <span className="text-[21px] font-normal" style={{ color: "#C8A882" }}>Gonn&apos;a </span>
-            <span className="text-[21px] font-bold" style={{ color: "#1A1A2E" }}>Global</span>
+          <div className="flex items-center" style={{ fontFamily: "Georgia, 'Times New Roman', serif", letterSpacing: "-0.01em" }}>
+            <span className="text-[22px] font-normal" style={{ color: "#B89A6A" }}>Gonn&apos;a </span>
+            <span className="text-[22px] font-bold" style={{ color: "#111111" }}>Global</span>
           </div>
         </Link>
 
@@ -109,7 +108,12 @@ export default function Topbar() {
         </div>
 
         {/* Right auth */}
-        <div className="flex items-center gap-3 shrink-0 ml-auto">
+        {/* Notification Bell */}
+        <Link href="/notifications" className="relative flex h-9 w-9 items-center justify-center rounded-full border border-[#E0E0E0] bg-white text-[#5A5A6A] transition hover:border-[#2563EB] hover:text-[#2563EB] hover:bg-[#EEF3FF] shrink-0 ml-auto mr-2">
+          <Bell className="h-4 w-4" />
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#EF4444] text-[9px] font-bold text-white">3</span>
+        </Link>
+        <div className="flex items-center gap-3 shrink-0">
           {!isLoggedIn ? (
             <>
               <Link href="/login" className="text-[13.5px] font-medium text-[#3D3D3D] transition hover:text-[#2563EB]">
@@ -212,3 +216,6 @@ export default function Topbar() {
     </header>
   )
 }
+
+
+

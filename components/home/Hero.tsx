@@ -1,16 +1,18 @@
-"use client"
+﻿"use client"
 import Link from "next/link"
-import { Search, ArrowRight } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
-
+import { ArrowRight } from "lucide-react"
 interface HeroProps {
   fullName: string
   isLoggedIn: boolean
   userType?: string
 }
 
-const QUICK_TAGS = ["Scholarships", "Internships", "Conferences", "Exchange Programs", "Research", "Volunteering"]
+const QUICK_TAGS = [
+  { label: "Global Opportunities", href: "/explore?type=global-opportunities" },
+  { label: "Competitions", href: "/explore?type=competitions" },
+  { label: "Internships", href: "/explore?type=internships" },
+  { label: "Results", href: "/explore?type=results" },
+]
 
 const STATS = [
   { number: "10K+", label: "Opportunities" },
@@ -20,13 +22,6 @@ const STATS = [
 ]
 
 export default function Hero({ fullName, isLoggedIn, userType }: HeroProps) {
-  const router = useRouter()
-  const [search, setSearch] = useState("")
-
-  const handleSearch = () => {
-    if (search.trim()) router.push(`/explore?search=${encodeURIComponent(search)}`)
-  }
-
   return (
     <section
       style={{
@@ -141,56 +136,7 @@ export default function Hero({ fullName, isLoggedIn, userType }: HeroProps) {
               : "Discover global opportunities, build your skills,\nconnect with people, and grow without borders."}
           </p>
 
-          {/* Search bar */}
-          <div
-            style={{
-              marginTop: "24px",
-              display: "flex",
-              alignItems: "center",
-              maxWidth: "490px",
-              background: "white",
-              borderRadius: "50px",
-              border: "1.5px solid #DEDED8",
-              padding: "9px 9px 9px 16px",
-              boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
-            }}
-          >
-            <Search style={{ height: "15px", width: "15px", color: "#AAAAAA", marginRight: "10px", flexShrink: 0 }} />
-            <input
-              type="text"
-              placeholder="Search scholarships, internships, conferences..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              style={{
-                flex: 1,
-                background: "transparent",
-                fontSize: "13px",
-                color: "#2B2B2B",
-                outline: "none",
-                border: "none",
-                fontFamily: "system-ui, -apple-system, sans-serif",
-              }}
-            />
-            <button
-              onClick={handleSearch}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "34px",
-                width: "34px",
-                flexShrink: 0,
-                borderRadius: "50%",
-                background: "#2563EB",
-                color: "white",
-                border: "none",
-                cursor: "pointer",
-              }}
-            >
-              <ArrowRight style={{ height: "16px", width: "16px" }} />
-            </button>
-          </div>
+          
 
           {/* Quick filter tags — single row, no wrapping */}
           <div
@@ -206,22 +152,25 @@ export default function Hero({ fullName, isLoggedIn, userType }: HeroProps) {
           >
             {QUICK_TAGS.map((tag) => (
               <Link
-                key={tag}
-                href={`/explore?type=${encodeURIComponent(tag)}`}
+                key={tag.label}
+                href={tag.href}
                 style={{
                   flexShrink: 0,
                   borderRadius: "50px",
-                  border: "1px solid #D8D8D5",
-                  background: "transparent",
-                  padding: "5px 14px",
+                  border: "1.5px solid #2563EB",
+                  background: "white",
+                  padding: "6px 16px",
                   fontSize: "12.5px",
-                  color: "#555555",
+                  color: "#2563EB",
                   textDecoration: "none",
                   whiteSpace: "nowrap",
                   fontFamily: "system-ui, -apple-system, sans-serif",
+                  fontWeight: 500,
+                  cursor: "pointer",
+                  boxShadow: "0 1px 3px rgba(37,99,235,0.08)",
                 }}
               >
-                {tag}
+                {tag.label}
               </Link>
             ))}
           </div>
@@ -286,7 +235,7 @@ export default function Hero({ fullName, isLoggedIn, userType }: HeroProps) {
               left: "0px",
               right: "0px",
               bottom: "8px",
-              borderRadius: "50% 20px 20px 50% / 50% 20px 20px 50%",
+              borderRadius: "40px",
               overflow: "hidden",
             }}
           >
@@ -311,7 +260,7 @@ export default function Hero({ fullName, isLoggedIn, userType }: HeroProps) {
             >
               <p
                 style={{
-                  fontSize: "24px",
+                  fontSize: "28px",
                   fontWeight: 500,
                   fontStyle: "italic",
                   lineHeight: 1.3,
