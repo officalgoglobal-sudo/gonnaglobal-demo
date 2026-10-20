@@ -1,409 +1,132 @@
-"use client"
+'use client';
+'use client';
+import React, {useEffect,useMemo,useState} from 'react';
+import Sidebar from "@/components/home/Sidebar";
+import Topbar from "@/components/home/Topbar";
+import "./ai-dashboard.css";
+import {Activity,ArrowUpRight,BriefcaseBusiness,Check,FileText,GraduationCap,LayoutDashboard,LoaderCircle,MapPin,Search,Sparkles,Target,Upload,UserRound,WandSparkles} from 'lucide-react';
+const API=(process.env.NEXT_PUBLIC_API_URL||'http://127.0.0.1:8001').replace(/\/$/,'');
 
-import { useState, useRef, useEffect } from "react"
-import Sidebar from "@/components/home/Sidebar"
-import Topbar from "@/components/home/Topbar"
-import { Sparkles, Send, User, Bot, RefreshCw, Lightbulb, Globe, GraduationCap, Briefcase, ChevronRight } from "lucide-react"
+type Opp={
+    id:string|number;
+    title:string;
+    organization:string;
+    type:string;
+    description:string;
+    required_skills:string[];
+    preferred_skills:string[];
+    location:string;
+    work_mode:string;
+    eligibility:string;
+    deadline:string|null;
+    application_url:string;
+    source?:string;
+    remote?:boolean;
+  };
+  
+type Rec=Opp&{match_score:number;matched_skills:string[];missing_skills:string[];explanation:string};
+type Profile={skills:string[];interests:string[];career_goals:string[];education:string;preferred_location:string;preferred_work_mode:string};
+const defaults:Profile={skills:['Python','SQL','Machine Learning'],interests:['AI','Research'],career_goals:['Machine Learning Engineer'],education:'B.Tech Information Technology',preferred_location:'Remote',preferred_work_mode:'Remote'};
+async function api<T>(path:string,init?:RequestInit):Promise<T>{const r=await fetch(API+path,init);if(!r.ok){let m=`API error ${r.status}`;try{m=(await r.json()).detail||m}catch{}throw Error(m)}return r.json()}
+function csv(s:string){return s.split(/[,;\n]/).map(x=>x.trim()).filter(Boolean)}
+export default function Home(){const [tab,setTab]=useState('Overview'),[profile,setProfile]=useState<Profile>(defaults),[skills,setSkills]=useState(defaults.skills.join(', ')),[interests,setInterests]=useState(defaults.interests.join(', ')),[goals,setGoals]=useState(defaults.career_goals.join(', ')),[items,setItems]=useState<Opp[]>([]),[recs,setRecs]=useState<Rec[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[message,setMessage]=useState(''),[search,setSearch]=useState(''),[kind,setKind]=useState('All'),[busy,setBusy]=useState(false),[resume,setResume]=useState(false),[dataSource,setDataSource]=useState('Loading sources…'),[demoMode,setDemoMode]=useState(false);
+const load=async(p=profile)=>{setLoading(true);setError('');try{const [o,r]=await Promise.all([api<{count:number;items:Opp[];source?:string;is_demo?:boolean}>('/api/opportunities'),api<{recommendations:Rec[];source?:string;is_demo?:boolean}>('/api/recommendations',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)})]);setItems(o.items);setRecs(r.recommendations);setDataSource(o.source||r.source||'Source not reported');setDemoMode(Boolean(o.is_demo||r.is_demo))}catch(e){setError(e instanceof Error?e.message:'Could not reach backend')}finally{setLoading(false)}};
+useEffect(()=>{try{const saved=localStorage.getItem('ggai-profile');if(saved){const p=JSON.parse(saved) as Profile;setProfile(p);setSkills(p.skills.join(', '));setInterests(p.interests.join(', '));setGoals(p.career_goals.join(', '));void load(p)}else void load()}catch{void load()}},[]);
+const filtered=useMemo(()=>recs.filter(o=>(kind==='All'||o.type===kind)&&`${o.title} ${o.organization} ${o.description} ${o.required_skills.join(' ')}`.toLowerCase().includes(search.toLowerCase())),[recs,kind,search]);
 
-type Message = {
-  id: string
-  role: "user" | "assistant"
-  content: string
-  time: string
-}
+const gaps=useMemo(()=>{
+  const count=new Map<string,number>();
+  const currentSkills=new Set(profile.skills.map(s=>s.trim().toLowerCase()));
 
-function formatTime(): string {
-  const d = new Date()
-  const h = d.getHours()
-  const m = d.getMinutes().toString().padStart(2, "0")
-  const ampm = h >= 12 ? "PM" : "AM"
-  const hour = h % 12 || 12
-  return `${hour}:${m} ${ampm}`
-}
+  for(const r of recs){
+    for(const s of r.missing_skills){
+      const skill=s.trim();
+      const normalized=skill.toLowerCase();
 
-const SUGGESTED_PROMPTS = [
-  { icon: GraduationCap, label: "Find scholarships for Computer Science students in Europe" },
-  { icon: Globe, label: "What are the best internships for a first-year student?" },
-  { icon: Briefcase, label: "How do I write a strong application for a fellowship?" },
-  { icon: Lightbulb, label: "Suggest global opportunities for a student from India" },
-]
+      if(!skill || currentSkills.has(normalized)) continue;
 
-const AI_RESPONSES: Record<string, string> = {
-  default: `I'm your Gonn'a Global AI assistant! I can help you:
-
-• **Find scholarships, internships & fellowships** tailored to your profile
-• **Craft strong applications** with tips on essays, CVs and cover letters  
-• **Explore global opportunities** by country, field or deadline
-• **Understand eligibility** requirements for specific programs
-• **Plan your global journey** step by step
-
-What would you like help with today?`,
-
-  scholarship: `Here are some top **scholarships** worth exploring:
-
-🎓 **Chevening Scholarship** (UK)
-Fully-funded masters for future leaders. Open to students from 160+ countries.
-Deadline: Nov 2025
-
-🎓 **DAAD Scholarship** (Germany)  
-Research & study grants for international students. Covers tuition + living costs.
-Deadline: Rolling
-
-🎓 **Fulbright Program** (USA)
-Prestigious exchange program for graduate study, research and teaching.
-Deadline: Oct 2025
-
-🎓 **Commonwealth Scholarship** (UK/Commonwealth)
-For students from Commonwealth nations pursuing masters or PhD.
-Deadline: Dec 2025
-
-Would you like detailed eligibility info or application tips for any of these?`,
-
-  internship: `Great question! Here are **top internship opportunities** to consider:
-
-💼 **Google STEP Internship** — For first/second year CS students
-💼 **UN Youth Volunteer Programme** — For global development enthusiasts  
-💼 **Microsoft Explore Program** — For early-stage tech students
-💼 **AIESEC Global Internships** — 400+ countries, multiple fields
-💼 **World Bank Young Professionals** — For economics/policy students
-
-**Tips for a strong application:**
-1. Tailor your CV to each role
-2. Write a specific cover letter (not generic)
-3. Highlight projects, not just coursework
-4. Apply 3–6 months before the start date
-
-Want me to help you identify the best fit based on your field of study?`,
-
-  fellowship: `Writing a **strong fellowship application** involves several key elements:
-
-📝 **Personal Statement**
-- Open with a compelling story, not a summary
-- Connect your past experience to your future goals
-- Be specific about why *this* fellowship, not fellowships in general
-
-📝 **Research Proposal** (if required)
-- Clearly state the problem you want to solve
-- Show awareness of existing work in the field
-- Explain your unique approach
-
-📝 **Letters of Recommendation**
-- Choose recommenders who know your work well
-- Brief them with your goals and the fellowship's focus
-- Give them 4–6 weeks notice
-
-📝 **Common Mistakes to Avoid**
-- Vague goals ("I want to help people")
-- Generic essays not tailored to the program
-- Submitting without proofreading
-
-Which fellowship are you applying to? I can give more specific advice!`,
-
-  india: `Exciting opportunities available for **students from India**:
-
-🌍 **International Scholarships**
-- Inlaks Shivdasani Foundation Scholarship
-- JN Tata Endowment Loan Scholarship  
-- Aga Khan Foundation International Scholarship
-- Narotam Sekhsaria Foundation Scholarship
-
-🌍 **Government Programs**
-- ICCR Scholarships (outbound)
-- National Overseas Scholarship (SC/ST students)
-- INSPIRE Scholarship (science students)
-
-🌍 **Global Fellowships**
-- Obama Foundation Leaders Asia-Pacific
-- Acumen Fellows Program
-- Atlas Corps Fellowship
-
-🌍 **Research Opportunities**
-- DAAD-IIT Research Internships in Science and Engineering (RISE)
-- Mitacs Globalink (Canada)
-- JSPS Summer Program (Japan)
-
-Would you like to filter by field of study or country preference?`
-}
-
-function getAIResponse(input: string): string {
-  const lower = input.toLowerCase()
-  if (lower.includes("scholarship") || lower.includes("fund")) return AI_RESPONSES.scholarship
-  if (lower.includes("internship") || lower.includes("intern")) return AI_RESPONSES.internship
-  if (lower.includes("fellowship") || lower.includes("application") || lower.includes("apply") || lower.includes("essay")) return AI_RESPONSES.fellowship
-  if (lower.includes("india") || lower.includes("indian")) return AI_RESPONSES.india
-  return `Thanks for your question! Here's what I can help with regarding **"${input}"**:
-
-Gonn'a Global indexes thousands of opportunities across scholarships, internships, fellowships, conferences and research programs from 180+ countries.
-
-To give you the most relevant results, could you share:
-1. Your **field of study** (e.g. Computer Science, Economics, Medicine)
-2. Your **current education level** (Undergraduate, Masters, PhD)
-3. Your **country of residence**
-4. Any **deadline preferences** (urgent vs. long-term)
-
-With this, I can suggest the best-matched opportunities for you! 🌍`
-}
-
-function formatMessage(content: string) {
-  // Bold: **text**
-  const parts = content.split(/(\*\*[^*]+\*\*)/g)
-  return parts.map((part, i) => {
-    if (part.startsWith("**") && part.endsWith("**")) {
-      return <strong key={i} className="font-semibold text-gray-900">{part.slice(2, -2)}</strong>
-    }
-    return <span key={i}>{part}</span>
-  })
-}
-
-export default function AIPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      role: "assistant",
-      content: AI_RESPONSES.default,
-      time: "",
-    },
-  ])
-  const [input, setInput] = useState("")
-  const [loading, setLoading] = useState(false)
-  const bottomRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLTextAreaElement>(null)
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
-
-  const sendMessage = async (text: string) => {
-    if (!text.trim() || loading) return
-
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: text.trim(),
-      time: formatTime(),
-    }
-
-    setMessages(prev => [...prev, userMsg])
-    setInput("")
-    setLoading(true)
-
-    // Simulate AI thinking delay
-    await new Promise(r => setTimeout(r, 900 + Math.random() * 600))
-
-    const aiMsg: Message = {
-      id: (Date.now() + 1).toString(),
-      role: "assistant",
-      content: getAIResponse(text),
-      time: formatTime(),
-    }
-
-    setMessages(prev => [...prev, aiMsg])
-    setLoading(false)
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      sendMessage(input)
+      count.set(skill,(count.get(skill)||0)+1);
     }
   }
 
-  const resetChat = () => {
-    setMessages([{
-      id: "1",
-      role: "assistant",
-      content: AI_RESPONSES.default,
-      time: "",
-    }])
-    setInput("")
+  return [...count.entries()]
+    .sort((a,b)=>b[1]-a[1] || a[0].localeCompare(b[0]))
+    .slice(0,12);
+},[recs,profile.skills]);
+
+const setField=(k:keyof Profile,v:string)=>setProfile(p=>({...p,[k]:v}));
+async function save(e:React.FormEvent){e.preventDefault();const p={...profile,skills:csv(skills),interests:csv(interests),career_goals:csv(goals)};if(!p.skills.length&&!p.interests.length&&!p.career_goals.length){setMessage('Add at least one skill, interest, or career goal to get recommendations.');return;}setProfile(p);localStorage.setItem('ggai-profile',JSON.stringify(p));setBusy(true);try{await load(p);setMessage('Profile saved. Recommendations refreshed.')}catch(e){setMessage(e instanceof Error?e.message:'Recommendations could not be refreshed. Your profile was saved locally.')}finally{setBusy(false)}}
+const [detectedSkills, setDetectedSkills] = useState<string[]>([]);
+const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+
+async function parseResume(e: React.ChangeEvent<HTMLInputElement>) {
+  const f = e.target.files?.[0];
+  if (!f) return;
+
+  const fd = new FormData();
+  fd.append("file", f);
+  setResume(true);
+  setMessage("");
+
+  try {
+    const out = await api<{
+      detected_skills: string[];
+      extracted_text_preview: string;
+    }>("/api/resume/parse", { method: "POST", body: fd });
+
+    const unique = [...new Set(out.detected_skills)];
+    setDetectedSkills(unique);
+    setSelectedSkills(unique);
+    setMessage(
+      `Detected ${unique.length} skills. Review and select the skills you want to save.`
+    );
+  } catch (e) {
+    setMessage(e instanceof Error ? e.message : "Resume parsing failed");
+  } finally {
+    setResume(false);
+    e.target.value = "";
   }
-
-  return (
-    <main className="min-h-screen bg-[#F8F5F0] text-gray-900">
-      <Sidebar />
-      <div className="lg:ml-[80px] flex flex-col h-screen">
-        <Topbar />
-
-        <div className="flex flex-1 overflow-hidden">
-          {/* ── LEFT PANEL — Chat ── */}
-          <div className="flex flex-1 flex-col overflow-hidden">
-
-            {/* Chat header */}
-            <div className="flex items-center justify-between border-b border-[#E7DDD1] bg-white px-5 py-3.5 sm:px-8">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#2563EB] to-[#7C3AED]">
-                  <Sparkles className="h-4.5 w-4.5 text-white" strokeWidth={2} />
-                </div>
-                <div>
-                  <p className="text-[14px] font-bold text-gray-900">Gonn'a Global AI</p>
-                  <div className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                    <p className="text-[11px] text-gray-500">Online · Ready to help</p>
-                  </div>
-                </div>
-              </div>
-              <button
-                onClick={resetChat}
-                className="flex items-center gap-1.5 rounded-lg border border-[#E7DDD1] bg-[#F8F5F0] px-3 py-1.5 text-[12px] font-medium text-gray-600 transition hover:border-gray-300 hover:bg-gray-100"
-              >
-                <RefreshCw className="h-3.5 w-3.5" /> New chat
-              </button>
-            </div>
-
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-4 py-5 sm:px-8">
-              <div className="mx-auto max-w-3xl space-y-5">
-                {messages.map(msg => (
-                  <div key={msg.id} className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
-                    {/* Avatar */}
-                    <div className={`shrink-0 flex h-8 w-8 items-center justify-center rounded-full ${
-                      msg.role === "assistant"
-                        ? "bg-gradient-to-br from-[#2563EB] to-[#7C3AED]"
-                        : "bg-[#EFE7DC]"
-                    }`}>
-                      {msg.role === "assistant"
-                        ? <Sparkles className="h-4 w-4 text-white" strokeWidth={2} />
-                        : <User className="h-4 w-4 text-[#6B5B52]" />
-                      }
-                    </div>
-
-                    {/* Bubble */}
-                    <div className={`max-w-[82%] rounded-2xl px-4 py-3 text-[13.5px] leading-[1.75] ${
-                      msg.role === "assistant"
-                        ? "bg-white border border-[#E7DDD1] text-gray-700 rounded-tl-sm shadow-sm"
-                        : "bg-[#2563EB] text-white rounded-tr-sm"
-                    }`}>
-                      {msg.role === "assistant"
-                        ? msg.content.split("\n").map((line, i) => (
-                            <p key={i} className={line === "" ? "h-2" : ""}>
-                              {formatMessage(line)}
-                            </p>
-                          ))
-                        : <p>{msg.content}</p>
-                      }
-                      <p className={`mt-1.5 text-[10px] ${msg.role === "assistant" ? "text-gray-400" : "text-white/60"}`}>
-                        {msg.time}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-
-                {/* Typing indicator */}
-                {loading && (
-                  <div className="flex gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#2563EB] to-[#7C3AED]">
-                      <Sparkles className="h-4 w-4 text-white" strokeWidth={2} />
-                    </div>
-                    <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-sm border border-[#E7DDD1] bg-white px-4 py-3 shadow-sm">
-                      {[0, 1, 2].map(i => (
-                        <div
-                          key={i}
-                          className="h-2 w-2 rounded-full bg-[#2563EB]/40 animate-bounce"
-                          style={{ animationDelay: `${i * 0.15}s` }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <div ref={bottomRef} />
-              </div>
-            </div>
-
-            {/* Suggested prompts */}
-            {messages.length === 1 && (
-              <div className="border-t border-[#E7DDD1] bg-white px-4 py-3 sm:px-8">
-                <div className="mx-auto max-w-3xl">
-                  <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gray-400">Try asking</p>
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    {SUGGESTED_PROMPTS.map(({ icon: Icon, label }) => (
-                      <button
-                        key={label}
-                        onClick={() => sendMessage(label)}
-                        className="group flex items-start gap-2 rounded-xl border border-[#E7DDD1] bg-[#F8F5F0] px-3 py-2.5 text-left text-[11.5px] text-gray-600 transition hover:border-[#2563EB]/30 hover:bg-blue-50 hover:text-[#2563EB]"
-                      >
-                        <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#2563EB]" />
-                        <span className="leading-tight">{label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Input bar */}
-            <div className="border-t border-[#E7DDD1] bg-white px-4 py-4 sm:px-8">
-              <div className="mx-auto max-w-3xl">
-                <div className="flex items-end gap-3 rounded-2xl border border-[#E0D5CC] bg-[#F8F5F0] px-4 py-3 transition focus-within:border-[#2563EB] focus-within:ring-2 focus-within:ring-[#2563EB]/15">
-                  <textarea
-                    ref={inputRef}
-                    value={input}
-                    onChange={e => setInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Ask about scholarships, internships, fellowships..."
-                    rows={1}
-                    className="flex-1 resize-none bg-transparent text-[13.5px] text-gray-900 outline-none placeholder:text-gray-400"
-                    style={{ maxHeight: "120px" }}
-                  />
-                  <button
-                    onClick={() => sendMessage(input)}
-                    disabled={!input.trim() || loading}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#2563EB] text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    <Send className="h-4 w-4" />
-                  </button>
-                </div>
-                <p className="mt-2 text-center text-[10.5px] text-gray-400">
-                  AI responses are for guidance only. Always verify deadlines and eligibility on official websites.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* ── RIGHT PANEL — Quick Links (desktop) ── */}
-          <div className="hidden xl:flex w-[280px] shrink-0 flex-col border-l border-[#E7DDD1] bg-white overflow-y-auto">
-            <div className="p-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400">Quick Explore</p>
-              <div className="mt-3 flex flex-col gap-2">
-                {[
-                  { label: "Top Scholarships 2025", tag: "New" },
-                  { label: "Remote Internships", tag: "Hot" },
-                  { label: "UN Fellowships", tag: "" },
-                  { label: "Research Programs", tag: "" },
-                  { label: "Hackathons & Competitions", tag: "" },
-                  { label: "Conference Grants", tag: "" },
-                ].map(({ label, tag }) => (
-                  <button key={label} className="group flex items-center justify-between rounded-xl border border-[#F0EAE4] bg-[#F8F5F0] px-3 py-2.5 text-left transition hover:border-[#2563EB]/30 hover:bg-blue-50">
-                    <span className="text-[12.5px] font-medium text-gray-700 group-hover:text-[#2563EB]">{label}</span>
-                    <div className="flex items-center gap-1.5">
-                      {tag && (
-                        <span className={`rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase ${tag === "New" ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-600"}`}>
-                          {tag}
-                        </span>
-                      )}
-                      <ChevronRight className="h-3.5 w-3.5 text-gray-300 group-hover:text-[#2563EB]" />
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              <div className="mt-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400">AI Can Help You With</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {["Scholarships", "Internships", "Fellowships", "CV Tips", "Essay Writing", "Deadlines", "Eligibility", "Countries"].map(tag => (
-                    <button
-                      key={tag}
-                      onClick={() => sendMessage(tag)}
-                      className="rounded-full border border-[#E0D5CC] bg-[#F8F5F0] px-3 py-1 text-[11.5px] font-medium text-[#6B5B52] transition hover:border-[#2563EB]/40 hover:bg-blue-50 hover:text-[#2563EB]"
-                    >
-                      {tag}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-  )
 }
+
+function saveSelectedSkills() {
+  const merged = [...new Set([...csv(skills), ...selectedSkills])];
+  const updatedProfile = { ...profile, skills: merged };
+
+  setSkills(merged.join(", "));
+  setProfile(updatedProfile);
+  localStorage.setItem("ggai-profile", JSON.stringify(updatedProfile));
+
+  setDetectedSkills([]);
+  setSelectedSkills([]);
+  setMessage("Skills saved. Click Save profile & refresh to update recommendations.");
+  setTab("My Profile");
+}
+const nav=[['Overview',LayoutDashboard],['Opportunities',BriefcaseBusiness],['My Profile',UserRound],['Resume AI',FileText],['Skill Gaps',Target]] as const;
+return <div className="ai-dashboard-shell"><Sidebar /><div className="ai-dashboard-content"><Topbar /><main className="main"><header className="top"><div><div className="eyebrow">STUDENT WORKSPACE / {tab.toUpperCase()}</div><h1>{({Overview:'Your career, with a clearer direction',Opportunities:'Opportunities matched to you','My Profile':'Build your student profile','Resume AI':'Turn your resume into a signal','Skill Gaps':'Your next skills to learn'} as Record<string,string>)[tab]}</h1><div className="sub">Find relevant opportunities and understand what to learn next.</div></div><button className="btn" onClick={()=>load()} title="Refresh"><Activity size={15}/> Refresh</button></header>
+<nav className="workspace-nav" aria-label="AI workspace">
+  {nav.map(([n, I]) => (
+    <button
+      key={n}
+      type="button"
+      className={`workspace-nav-item ${tab === n ? "active" : ""}`}
+      onClick={() => { setTab(n); setMessage(""); }}
+      aria-current={tab === n ? "page" : undefined}
+    >
+      <I size={16} />
+      <span>{n}</span>
+    </button>
+  ))}
+</nav>
+{error&&<div className="notice error"><strong>Backend connection:</strong> {error}<br/>Ensure the AI backend is running on port 8001, then refresh this page.</div>}{!loading&&!error&&<div className="notice"><strong>Data source:</strong> {dataSource} · <strong>{demoMode?'Demo sample data — verify before use':'Live-source listings — verify details before applying'}</strong></div>}{message&&<div className="notice success">{message}</div>}{loading&&<div className="card"><LoaderCircle className="spin" size={18}/> Loading workspace…</div>}
+{!loading&&tab==='Overview'&&<><div className="stats"><Stat title="Opportunities" value={items.length} foot="In current catalogue"/><Stat title="Strong matches" value={recs.filter(r=>r.match_score>=60).length} foot="60+ ranking score"/><Stat title="Your skills" value={profile.skills.length} foot="From profile and resume"/><Stat title="Skill gaps" value={gaps.length} foot="Across current catalogue"/></div><div className="columns"><section className="card"><div className="cardhead"><div><h2>Recommended for you</h2><p>Ranked against your current profile</p></div><button className="btn" onClick={()=>setTab('Opportunities')}>View all <ArrowUpRight size={13}/></button></div>{recs.slice(0,4).map(r=><Recommendation key={r.id} r={r} compact/>)}</section><section className="card"><div className="cardhead"><div><h2>Skills to focus on</h2><p>Frequently requested in this catalogue</p></div><GraduationCap size={19}/></div>{gaps.slice(0,6).map(([s,n])=><div className="gap" key={s}><div><strong>{s}</strong>
+<small>Detected in {n} opportunity description(s)</small></div><span className="pill">{n} roles</span></div>)}{!gaps.length&&<div className="empty">Add your skills to see skill gaps.</div>}<button className="btn" style={{width:'100%',marginTop:12}} onClick={()=>setTab('Skill Gaps')}>Explore skill gaps</button></section></div></>}
+{!loading&&tab==='Opportunities'&&<section className="card"><div className="cardhead"><div><h2>Opportunity catalogue</h2><p>{filtered.length} matches · live and fallback opportunities</p></div></div><div className="toolbar"><div style={{position:'relative',flex:'1 1 250px'}}><Search size={15} style={{position:'absolute',left:11,top:12,color:'#737e93'}}/><input className="search" style={{paddingLeft:34,maxWidth:'none'}} placeholder="Search roles, skills, organizations…" value={search} onChange={e=>setSearch(e.target.value)}/></div><select className="search" style={{maxWidth:180}} value={kind} onChange={e=>setKind(e.target.value)}><option>All</option>{[...new Set(items.map(x=>x.type))].map(x=><option key={x}>{x}</option>)}</select></div>{filtered.map(r=><Recommendation key={r.id} r={r}/>)}{!filtered.length&&<div className="empty">No results. Try another search or category.</div>}</section>}
+{!loading&&tab==='My Profile'&&<section className="card"><div className="cardhead"><div><h2>Student profile</h2><p>Your profile is saved in this browser. Recommendations are ranked against your profile.</p></div><UserRound size={19}/></div><form onSubmit={save}><div className="formgrid"><Field label="Skills (comma separated)"><textarea value={skills} onChange={e=>setSkills(e.target.value)} placeholder="Python, SQL, Machine Learning"/></Field><Field label="Interests (comma separated)"><textarea value={interests} onChange={e=>setInterests(e.target.value)} placeholder="AI, startups, research"/></Field><Field label="Career goals (comma separated)" full><textarea value={goals} onChange={e=>setGoals(e.target.value)} placeholder="Machine Learning Engineer, AI Research"/></Field><Field label="Education"><input value={profile.education||''} onChange={e=>setField('education',e.target.value)} placeholder="B.Tech Information Technology"/></Field><Field label="Preferred location"><input value={profile.preferred_location||''} onChange={e=>setField('preferred_location',e.target.value)} placeholder="Remote, India, Jaipur"/></Field><Field label="Preferred work mode"><select value={profile.preferred_work_mode||'Any'} onChange={e=>setField('preferred_work_mode',e.target.value)}><option>Any</option><option>Remote</option><option>Hybrid</option><option>On-site</option></select></Field></div><div style={{display:'flex',justifyContent:'flex-end',marginTop:18}}><button className="btn primary" disabled={busy}>{busy?<LoaderCircle className="spin" size={15}/>:<Check size={15}/>} Save profile & refresh</button></div></form></section>}
+{!loading&&tab==='Resume AI'&&<div className="columns"><section className="card"><div className="cardhead"><div><h2>Resume analyzer</h2><p>Extract text and detect known skills</p></div><FileText size={18}/></div><div className="notice">PDF and TXT supported · max 5 MB. Scanned/image-only PDFs need OCR, which is not included. Review detected skills before saving.</div><label className="card" style={{display:'flex',alignItems:'center',flexDirection:'column',gap:12,borderStyle:'dashed',cursor:'pointer',padding:30}}><Upload size={27}/><strong>{resume?'Analyzing…':'Choose your resume'}</strong><span className="small">PDF or TXT</span><input type="file" accept=".pdf,.txt" onChange={parseResume} disabled={resume}/>{resume&&<LoaderCircle className="spin" size={18}/>}</label>{detectedSkills.length>0&&<div style={{marginTop:18}}><h3>Review detected skills</h3><p className="small">Select the skills you want to add to your profile.</p><div className="skillrow" style={{marginTop:12}}>{detectedSkills.map(skill=><label key={skill} className="skill" style={{display:"inline-flex",alignItems:"center",gap:6,cursor:"pointer"}}><input type="checkbox" checked={selectedSkills.includes(skill)} onChange={e=>setSelectedSkills(current=>e.target.checked?[...current,skill]:current.filter(x=>x!==skill))}/>{skill}</label>)}</div><button className="btn primary" style={{marginTop:16}} onClick={saveSelectedSkills} disabled={selectedSkills.length===0}>Save selected skills ({selectedSkills.length})</button></div>}</section><section className="card"><h2 style={{fontFamily:'Manrope',fontSize:16}}>How it works</h2><div className="gap"><div><strong>1. Extract text</strong><small>Read selectable PDF/TXT content</small></div></div><div className="gap"><div><strong>2. Detect skills</strong><small>Rule-based keyword extraction</small></div></div><div className="gap"><div><strong>3. Review and save</strong><small>Confirm skills before recommendations</small></div></div></section></div>}
+{!loading&&tab==='Skill Gaps'&&<div className="columns"><section className="card"><div className="cardhead"><div><h2>Prioritized skill gaps</h2><p>Frequency in the current opportunity sample</p></div><Target size={18}/></div>{gaps.map(([s,n],i)=><div className="gap" key={s}><div><strong>{i<3?'High focus':i<7?'Explore next':'Additional'} · {s}</strong><small>Detected in {n} opportunity record(s)</small></div><span className="pill">{n} roles</span></div>)}{!gaps.length&&<div className="empty">Add profile skills to compare against requirements.</div>}</section><section className="card"><h2 style={{fontFamily:'Manrope',fontSize:16}}>Your current skills</h2><div className="skillrow">{profile.skills.map(s=><span className="skill" key={s}>{s}</span>)}</div><button className="btn primary" style={{width:'100%',justifyContent:'center',marginTop:18}} onClick={()=>setTab('My Profile')}>Update skills</button><p className="meta">Scores are heuristic ranking scores, not probabilities of getting selected. Skill gaps are inferred from detected keywords in the current GoGlobal catalogue, not verified mandatory requirements or market demand. </p></section></div>}
+<div className="notice" style={{marginTop:17}}><strong>Important:</strong> Listings may have eligibility or availability restrictions. Verify the details on the original source before applying.</div><div className="footer">GoGlobal AI · Hybrid recommendation baseline · Resume processing is rule-based and requires human review.</div></main></div></div>}
+function Stat({title,value,foot}:{title:string;value:number;foot:string}){return <div className="card"><div className="label">{title}<Sparkles size={15} color="#3157d5"/></div><div className="value">{value}</div><div className="small">{foot}</div></div>}
+function Field({label,children,full=false}:{label:string;children:React.ReactNode;full?:boolean}){return <div className={`field ${full?'full':''}`}><label>{label}</label>{children}</div>}
+function Recommendation({r,compact=false}:{r:Rec;compact?:boolean}){return <div className="item"><div className="org"><BriefcaseBusiness size={17}/></div><div className="itembody"><h3>{r.title}</h3><div className="meta">{r.organization} · {r.type} · <MapPin size={11} style={{display:'inline',verticalAlign:'-2px'}}/> {r.location}</div>{!compact&&<div className="meta" style={{marginTop:7}}>{r.description}</div>}<div className="skillrow">{r.matched_skills.slice(0,compact?3:8).map(s=><span className="skill" key={s}>✓ {s}</span>)}{r.missing_skills.slice(0,compact?2:8).map(s=><span className="skill missing" key={s}>Need: {s}</span>)}</div>{!compact&&<div className="meta">{r.eligibility} · {r.explanation}</div>}<div className="meta"><span className="pill">
+{r.source || 'DEMO LISTING'}
+</span> <a href={r.application_url} target="_blank" rel="noreferrer" style={{color:'#3157d5',fontWeight:700}}>View listing <ArrowUpRight size={11} style={{display:'inline',verticalAlign:'-2px'}}/></a></div></div><div className="score">{r.match_score}%<div className="small" style={{textAlign:'right'}}>match</div></div></div>}
