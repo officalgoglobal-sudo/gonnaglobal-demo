@@ -384,69 +384,20 @@ const [applicationLink, setApplicationLink] =
 
 <select
   value={type}
-  onChange={(e) =>
-    setType(e.target.value)
-  }
+  onChange={(e) => setType(e.target.value)}
   className="h-14 w-full rounded-2xl border border-[#E7DDD1] bg-[#FFFDF9] px-5 text-base outline-none transition focus:border-[#2563EB]"
 >
-
-<option value="">
-  Select type
-</option>
-
-<option value="Global Opportunities">
-  Global Opportunities
-</option>
-
-<option value="Regional Opportunities">
-  Regional Opportunities
-</option>
-
-<option value="Internships">
-  Internships
-</option>
-
-<option value="Freelancing">
-  Freelancing
-</option>
-
-<option value="Meet Ups">
-  Meet Ups
-</option>
-
-<option value="Conferences">
-  Conferences
-</option>
-
-<option value="Startup Programs">
-  Startup Programs
-</option>
-
-<option value="Hackathons">
-  Hackathons
-</option>
-
-<option value="Sports">
-  Sports
-</option>
-
-<option value="Mentorship">
-  Mentorship
-</option>
-
-<option value="Fellowships">
-  Fellowships
-</option>
-
-<option value="Scholarships">
-  Scholarships
-</option>
-
-<option value="Cultural Events">
-  Cultural Events
-</option>
-
+  <option value="">Select type</option>
+  <option value="Global Opportunities">Global Opportunities</option>
+  <option value="Internships">Internships</option>
+  <option value="Hackathons">Hackathons</option>
+  <option value="Sports">Sports</option>
+  <option value="Conferences">Conferences</option>
+  <option value="Freelancing">Freelancing</option>
+  <option value="Events">Events</option>
+  <option value="Competitions">Competitions</option>
 </select>
+
 
 </div>
 

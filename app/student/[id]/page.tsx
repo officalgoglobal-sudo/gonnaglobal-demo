@@ -1,473 +1,287 @@
 "use client"
 
-import {
-  useEffect,
-  useState,
-} from "react"
-
-import {
-  useParams,
-  useRouter,
-} from "next/navigation"
-
-import {
-  doc,
-  getDoc,
-} from "firebase/firestore"
-
-import {
-  db,
-} from "@/lib/firebase"
-
+import { useEffect, useState } from "react"
+import { useParams } from "next/navigation"
+import { doc, getDoc } from "firebase/firestore"
+import { db } from "@/lib/firebase"
 import Sidebar from "@/components/home/Sidebar"
+import Topbar from "@/components/home/Topbar"
+
+const DEFAULT_BANNER =
+  "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1400&q=80"
+
+function asList(value: unknown): any[] {
+  if (Array.isArray(value)) return value
+  if (typeof value === "string" && value.trim()) {
+    return value.split(",").map((item) => item.trim()).filter(Boolean)
+  }
+  return []
+}
+
+function Section({
+  title,
+  children,
+}: {
+  title: string
+  children: React.ReactNode
+}) {
+  return (
+    <section className="rounded-2xl border border-[#EBEBEB] bg-white p-6 shadow-sm">
+      <h2 className="mb-4 text-lg font-bold text-[#1A1A2E]">{title}</h2>
+      {children}
+    </section>
+  )
+}
 
 export default function StudentProfilePage() {
-
   const params = useParams()
-
-  const router = useRouter()
-
-  const [loading, setLoading] =
-    useState(true)
-
-  const [student, setStudent] =
-    useState<any>(null)
+  const id = String(params.id ?? "")
+  const [student, setStudent] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
 
   useEffect(() => {
+    let active = true
 
-    const fetchStudent = async () => {
-
+    async function fetchStudent() {
       try {
+        const snapshot = await getDoc(doc(db, "users", id))
 
-        const studentRef = doc(
-          db,
-          "users",
-          String(params.id)
-        )
+        if (!active) return
 
-        const studentSnapshot =
-          await getDoc(studentRef)
-
-        if (!studentSnapshot.exists()) {
-
-          router.push("/recruit/dashboard")
-
-          return
-
+        if (!snapshot.exists()) {
+          setError("This profile could not be found.")
+        } else {
+          setStudent(snapshot.data())
         }
-
-        setStudent(studentSnapshot.data())
-
-        setLoading(false)
-
-      } catch (error) {
-
-        console.error(error)
-
+      } catch (err) {
+        console.error("Unable to load public profile:", err)
+        if (active) {
+          setError("Unable to load this profile. Please try again later.")
+        }
+      } finally {
+        if (active) setLoading(false)
       }
-
     }
 
-    fetchStudent()
+    if (id) fetchStudent()
+    else {
+      setError("Invalid profile link.")
+      setLoading(false)
+    }
 
-  }, [params.id, router])
+    return () => {
+      active = false
+    }
+  }, [id])
 
   if (loading) {
-
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#F8F5F0]">
-
-        <p className="text-[#8B7355]">
-          Loading student profile...
-        </p>
-
+      <main className="flex min-h-screen items-center justify-center bg-[#F8F9FC]">
+        <p className="text-sm text-slate-500">Loading public profile...</p>
       </main>
     )
-
   }
+
+  if (error || !student) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#F8F9FC] p-6">
+        <div className="rounded-2xl border bg-white p-8 text-center shadow-sm">
+          <h1 className="text-xl font-bold text-slate-900">Profile unavailable</h1>
+          <p className="mt-2 text-sm text-slate-500">
+            {error || "This profile could not be found."}
+          </p>
+          <a href="/profile" className="mt-5 inline-block font-semibold text-blue-600">
+            Back to profile
+          </a>
+        </div>
+      </main>
+    )
+  }
+
+  const education = asList(student.education)
+  const interests = asList(student.interests)
+  const skills = asList(student.skills)
+  const languages = asList(student.languages)
+  const careerGoals = asList(student.careerGoals)
+  const name = student.fullName || student.displayName || "Student"
+  const photo = student.photoURL || student.profilePhoto || ""
 
   return (
-    <>
+    <div className="min-h-screen bg-[#F8F9FC] text-[#1A1A2E]">
       <Sidebar />
+      <div className="lg:ml-[80px]">
+        <Topbar />
+        <main className="min-w-0">
+      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-8">
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="h-40 bg-slate-200 sm:h-56">
+            <img
+              src={student.bannerURL || student.bannerImage || student.coverURL || DEFAULT_BANNER}
+              alt=""
+              className="h-full w-full object-cover"
+            />
+          </div>
 
-      <main className="ml-24 min-h-screen bg-[#F8F5F0] text-[#2B1D16]">
+          <div className="px-6 pb-7 sm:px-9">
+            <div className="-mt-14 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div className="flex min-w-0 items-end gap-4">
+              <div className="flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-slate-100 shadow-sm">
+                {photo ? (
+                  <img src={photo} alt={`${name}'s profile`} className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-3xl font-bold text-slate-400">
+                    {name.charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <div className="pb-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-600">
+                  Student Profile
+                </p>
+                <h1 className="mt-1 text-2xl font-bold sm:text-3xl">{name}</h1>
+              </div>
+              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  const profileUrl = window.location.href
+                  try {
+                    if (navigator.share) {
+                      await navigator.share({
+                        title: `${name}'s public profile`,
+                        url: profileUrl,
+                      })
+                    } else {
+                      await navigator.clipboard.writeText(profileUrl)
+                      alert("Public profile link copied!")
+                    }
+                  } catch (error) {
+                    if (error instanceof Error && error.name !== "AbortError") {
+                      try {
+                        await navigator.clipboard.writeText(profileUrl)
+                        alert("Public profile link copied!")
+                      } catch {
+                        alert("Couldn't share automatically. Copy the profile URL from your browser.")
+                      }
+                    }
+                  }
+                }}
+                className="inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-full border border-[#2563EB] bg-white px-5 py-2.5 text-sm font-semibold text-[#2563EB] transition hover:bg-[#EEF3FF] sm:mb-1 sm:self-auto"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m8.6 10.6 6.8-4.2M8.6 13.4l6.8 4.2" />
+                </svg>
+                Share Profile
+              </button>
 
-        <section className="border-b border-[#E7DDD1] bg-[#FFFDF9] px-10 py-10">
-
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-
-<div className="max-w-4xl">
-
-  <p className="text-sm uppercase tracking-[0.25em] text-[#8B7355]">
-    Candidate Profile
-  </p>
-
-  <h1 className="mt-4 text-5xl font-bold tracking-tight">
-    {student.fullName}
-  </h1>
-
-  
-
-  <div className="mt-4 flex flex-wrap gap-3">
-
-    {student.country && (
-      <span className="rounded-full bg-[#F8F5F0] px-4 py-2 text-sm font-medium">
-        {student.country}
-      </span>
-    )}
-
-    {student.skills?.slice(0, 3).map(
-      (skill: string, index: number) => (
-        <span
-          key={index}
-          className="rounded-full bg-[#2563EB]/10 px-4 py-2 text-sm font-medium text-[#2563EB]"
-        >
-          {skill}
-        </span>
-      )
-    )}
-
-  </div>
-
-  <p className="mt-6 max-w-4xl text-lg leading-8 text-[#6B5B52]">
-    {student.bio || "No bio added yet."}
-  </p>
-
-</div>
-
-</div>
-
+            </div>
+          </div>
         </section>
 
-        <section className="px-10 py-10">
+        <div className="mt-6 grid gap-5 md:grid-cols-2">
+          <div className="space-y-5">
+            <Section title="About Me">
+              <p className="whitespace-pre-wrap break-words text-sm leading-7 text-slate-600">
+                {student.aboutMe || "No introduction added yet."}
+              </p>
+            </Section>
 
-          <div className="grid gap-6 lg:grid-cols-2">
+            <Section title="Interests">
+              {interests.length ? (
+                <div className="flex flex-wrap gap-2">
+                  {interests.map((item, index) => (
+                    <span key={index} className="rounded-full bg-blue-50 px-3 py-2 text-sm text-blue-700">
+                      {typeof item === "string" ? item : item.name || item.label || ""}
+                    </span>
+                  ))}
+                </div>
+              ) : <p className="text-sm text-slate-500">No interests added yet.</p>}
+            </Section>
 
-            <div className="rounded-[32px] border border-[#E7DDD1] bg-[#FFFDF9] p-6 shadow-sm shadow-[#E7DDD1]/40">
+            <Section title="Skills">
+              {skills.length ? (
+                <div className="flex flex-wrap gap-2">
+                  {skills.map((item, index) => (
+                    <span key={index} className="rounded-full border border-slate-200 px-3 py-2 text-sm text-slate-700">
+                      {typeof item === "string" ? item : item.name || item.label || ""}
+                    </span>
+                  ))}
+                </div>
+              ) : <p className="text-sm text-slate-500">No skills added yet.</p>}
+            </Section>
+          </div>
 
-              <h2 className="text-2xl font-bold text-[#2B1D16]">
+          <div className="space-y-5">
+            <Section title="Career Goals">
+              {careerGoals.length ? (
+                <ul className="list-inside list-disc space-y-2 text-sm leading-6 text-slate-600">
+                  {careerGoals.map((item, index) => (
+                    <li key={index}>
+                      {typeof item === "string" ? item : item.name || item.title || item.label || ""}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="whitespace-pre-wrap break-words text-sm leading-7 text-slate-600">
+                  {typeof student.careerGoals === "string" && student.careerGoals.trim()
+                    ? student.careerGoals
+                    : "No career goals added yet."}
+                </p>
+              )}
+            </Section>
 
-                Education
+            <Section title="Education">
+              {education.length ? (
+                <div className="space-y-4">
+                  {education.map((edu, index) => (
+                    <div key={index} className="border-b border-slate-100 pb-4 last:border-0 last:pb-0">
+                      <h3 className="font-semibold text-slate-800">
+                        {typeof edu === "string" ? edu : edu.institution || edu.school || edu.college || "Institution"}
+                      </h3>
+                      {typeof edu !== "string" && (
+                        <>
+                          {(edu.degree || edu.stream) && (
+                            <p className="mt-1 text-sm text-slate-600">
+                              {[edu.degree, edu.stream].filter(Boolean).join(" · ")}
+                            </p>
+                          )}
+                          {(edu.startYear || edu.endYear) && (
+                            <p className="mt-1 text-xs text-slate-500">
+                              {[edu.startYear, edu.endYear].filter(Boolean).join(" – ")}
+                            </p>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : <p className="text-sm text-slate-500">No education added yet.</p>}
+            </Section>
 
-              </h2>
-              <div className="mt-4 inline-flex rounded-full bg-[#F8F5F0] px-4 py-2 text-sm font-medium text-[#2B1D16]">
-  Dropper: {student.isDropper ? "Yes" : "No"}
-</div>
-
-              <div className="mt-6 space-y-6">
-            
-
-  {student.education?.length ? (
-
-    student.education.map(
-      (edu: any, index: number) => (
-
-        <div
-          key={index}
-          className="border-b border-[#E7DDD1] pb-5 last:border-0"
-        >
-
-          <h3 className="text-lg font-semibold">
-            {edu.institution}
-          </h3>
-
-          <p className="mt-2 text-[#6B5B52]">
-            Degree: {edu.degree}
-          </p>
-
-          <p className="text-[#6B5B52]">
-            Stream: {edu.stream}
-          </p>
-
-          <p className="text-[#8B7355]">
-            {edu.startYear} - {edu.endYear}
-          </p>
-
-          {edu.collegeEmail && (
-            <p className="mt-2 text-sm text-[#2563EB]">
-              {edu.collegeEmail}
-            </p>
-          )}
-
+            <Section title="Languages Known">
+              {languages.length ? (
+                <div className="flex flex-wrap gap-2">
+                  {languages.map((item, index) => (
+                    <span key={index} className="rounded-full bg-slate-100 px-3 py-2 text-sm text-slate-700">
+                      {typeof item === "string" ? item : item.name || item.language || item.label || ""}
+                    </span>
+                  ))}
+                </div>
+              ) : <p className="text-sm text-slate-500">No languages added yet.</p>}
+            </Section>
+          </div>
         </div>
 
-      )
-    )
-
-  ) : (
-
-    <p className="text-[#8B7355]">
-      No education added
-    </p>
-
-  )}
-
-</div>
-
-</div>
-
-<div className="rounded-[32px] border border-[#E7DDD1] bg-[#FFFDF9] p-6 shadow-sm shadow-[#E7DDD1]/40">
-
-  <h2 className="text-2xl font-bold text-[#2B1D16]">
-    Experience
-  </h2>
-
-  <div className="mt-6 space-y-6">
-
-    {student.experiences?.length ? (
-
-      student.experiences.map(
-        (exp: any, index: number) => (
-
-          <div
-            key={index}
-            className="border-b border-[#E7DDD1] pb-5 last:border-0"
-          >
-
-            <h3 className="text-lg font-semibold">
-              {exp.role}
-            </h3>
-
-            <p className="text-[#6B5B52]">
-              {exp.company}
-            </p>
-
-            <p className="text-[#8B7355]">
-              {exp.startDate} - {exp.currentlyWorking ? "Present" : exp.endDate}
-            </p>
-
-            {exp.description && (
-              <p className="mt-3 break-words text-[#6B5B52]">
-                {exp.description}
-              </p>
-            )}
-
-          </div>
-
-        )
-      )
-
-    ) : (
-
-      <p className="text-[#8B7355]">
-        No experience added
-      </p>
-
-    )}
-
-  </div>
-
-</div>
-<div className="rounded-[32px] border border-[#E7DDD1] bg-[#FFFDF9] p-6 shadow-sm shadow-[#E7DDD1]/40">
-
-  <h2 className="text-2xl font-bold text-[#2B1D16]">
-    Certificates
-  </h2>
-
-  <div className="mt-6 space-y-6">
-
-    {student.certificates?.length ? (
-
-      student.certificates.map(
-        (cert: any, index: number) => (
-
-          <div
-            key={index}
-            className="rounded-2xl bg-[#F8F5F0] p-4"
-          >
-
-            <h3 className="font-semibold">
-              {cert.title}
-            </h3>
-
-            <p className="mt-2 text-[#6B5B52]">
-              {cert.description}
-            </p>
-
-            {cert.link && (
-
-              <a
-              href={
-                cert.link.startsWith("http")
-                  ? cert.link
-                  : `https://${cert.link}`
-              }
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 block text-[#2563EB] underline"
-              >
-
-                View Certificate
-
-              </a>
-
-            )}
-
-          </div>
-
-        )
-      )
-
-    ) : (
-
-      <p className="text-[#8B7355]">
-        No certificates added
-      </p>
-
-    )}
-
-  </div>
-
-
-
-            </div>
-
-            
-
-            <div className="rounded-[32px] border border-[#E7DDD1] bg-[#FFFDF9] p-6 shadow-sm shadow-[#E7DDD1]/40">
-
-              <h2 className="text-2xl font-bold text-[#2B1D16]">
-
-                Links
-
-              </h2>
-
-              <div className="mt-4 flex flex-col gap-3">
-
-              {student.linkedin && (
-
-<a
-  href={
-    student.linkedin.startsWith("http")
-      ? student.linkedin
-      : `https://${student.linkedin}`
-  }
-  target="_blank"
-  rel="noopener noreferrer"
-  className="block rounded-xl border border-[#E7DDD1] px-4 py-3 text-[#2563EB] hover:bg-[#F8F5F0]"
->
-  LinkedIn
-</a>
-
-)}
-
-{student.portfolio && (
-
-<a
-  href={
-    student.portfolio.startsWith("http")
-      ? student.portfolio
-      : `https://${student.portfolio}`
-  }
-  target="_blank"
-  rel="noopener noreferrer"
-  className="block rounded-xl border border-[#E7DDD1] px-4 py-3 text-[#2563EB] hover:bg-[#F8F5F0]"
->
-
-  Portfolio
-
-</a>
-
-)}
-
-{student.resume && (
-
-<a
-  href={
-    student.resume.startsWith("http")
-      ? student.resume
-      : `https://${student.resume}`
-  }
-  target="_blank"
-  rel="noopener noreferrer"
-  className="block rounded-xl border border-[#E7DDD1] px-4 py-3 text-[#2563EB] hover:bg-[#F8F5F0]"
->
-  Resume
-</a>
-
-)}
-
-              </div>
-
-            </div>
-            <div className="mt-8 rounded-[32px] min-h-[180px] border border-[#E7DDD1] bg-[#FFFDF9] p-6 shadow-sm shadow-[#E7DDD1]/40">
-
-<h2 className="text-2xl font-bold text-[#2B1D16]">
-  Skills
-</h2>
-
-<div className="mt-6 flex flex-wrap gap-3">
-
-  {student.skills?.length ? (
-
-    student.skills.map(
-      (skill: string, index: number) => (
-
-        <span
-          key={index}
-          className="rounded-full border border-[#E7DDD1] bg-[#FFFDF9] px-5 py-3 text-sm font-medium text-[#2B1D16]"
-        >
-
-          {skill}
-
-        </span>
-
-      )
-    )
-
-  ) : (
-
-    <p className="text-[#8B7355]">
-      No skills added
-    </p>
-
-  )}
-
-</div>
-
-</div>
-            <div className="mt-8 rounded-[32px] h-fit border border-[#E7DDD1] bg-[#FFFDF9] p-6 shadow-sm shadow-[#E7DDD1]/40">
-
-              <h2 className="text-2xl font-bold text-[#2B1D16]">
-
-                Contact
-
-              </h2>
-
-              <div className="mt-6 grid gap-4">
-
-              <div className="rounded-xl bg-[#F8F5F0] p-4">
-    <strong>Email:</strong> {student.email || "Not added"}
+        <p className="py-8 text-center text-xs text-slate-400">
+          Public profile · Information shared by the student
+        </p>
+      </div>
+        </main>
+      </div>
     </div>
-
-  <div className="rounded-xl bg-[#F8F5F0] p-4">
-    <strong>Alternate Email:</strong> {student.alternateEmail || "Not added"}
-    </div>
-
-  <div className="rounded-xl bg-[#F8F5F0] p-4">
-    <strong>Phone:</strong> {student.phone || "Not added"}
-    </div>
-
-  <div className="rounded-xl bg-[#F8F5F0] p-4">
-    <strong>WhatsApp:</strong> {student.whatsapp || "Not added"}
-    </div>
-
-  <div className="rounded-xl bg-[#F8F5F0] p-4">
-    <strong>Country:</strong> {student.country || "Not added"}
-    </div>
- 
-  
-
-</div>
-
-            </div>
-
-       
-</div>
-        </section>
-
-      </main>
-    </>
   )
-
 }

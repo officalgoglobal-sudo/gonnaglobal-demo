@@ -1,9 +1,9 @@
-﻿"use client"
+"use client"
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { onAuthStateChanged } from "firebase/auth"
-import { doc, getDoc } from "firebase/firestore"
+import { collection, doc, getDoc, onSnapshot, query, where } from "firebase/firestore"
 import { auth, db } from "@/lib/firebase"
 import { Bell, ChevronDown, Menu, Search, X } from "lucide-react"
 
@@ -11,7 +11,8 @@ const NAV_LINKS = [
   { href: "/explore", label: "Explore" },
   { href: "/categories", label: "Categories" },
   { href: "/events", label: "Events" },
-  { href: "/networking", label: "Network" },
+  { href: "/networking", label: "Networking" },
+  { href: "/resources", label: "Courses" },
   { href: "/about", label: "About" },
 ]
 
@@ -19,26 +20,59 @@ export default function Topbar() {
   const pathname = usePathname()
   const router = useRouter()
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+const [unreadCount, setUnreadCount] = useState(0)
   const [fullName, setFullName] = useState("")
   const [role, setRole] = useState("")
   const [mobileOpen, setMobileOpen] = useState(false)
   const [searchFocused, setSearchFocused] = useState(false)
-  const [searchVal, setSearchVal] = useState("")
+const [searchVal, setSearchVal] = useState("")
 
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setIsLoggedIn(true)
-        const snap = await getDoc(doc(db, "users", user.uid))
-        const d = snap.data()
-        setFullName(d?.fullName || "")
-        setRole(d?.activeRole || d?.role || "user")
-      } else {
-        setIsLoggedIn(false)
+useEffect(() => {
+  let unsubscribeNotifications: (() => void) | undefined
+
+  const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+    if (unsubscribeNotifications) {
+      unsubscribeNotifications()
+      unsubscribeNotifications = undefined
+    }
+
+    setUnreadCount(0)
+
+    if (!user) {
+      setIsLoggedIn(false)
+      setFullName("")
+      setRole("")
+      return
+    }
+
+    setIsLoggedIn(true)
+
+    const snap = await getDoc(doc(db, "users", user.uid))
+    const d = snap.data()
+    setFullName(d?.fullName || "")
+    setRole(d?.activeRole || d?.role || "user")
+
+    const notificationsQuery = query(
+      collection(db, "notifications"),
+      where("userId", "==", user.uid),
+      where("isRead", "==", false)
+    )
+
+    unsubscribeNotifications = onSnapshot(
+      notificationsQuery,
+      (snapshot) => setUnreadCount(snapshot.size),
+      (error) => {
+        console.error("Failed to load unread notifications:", error)
+        setUnreadCount(0)
       }
-    })
-    return () => unsub()
-  }, [])
+    )
+  })
+
+  return () => {
+    unsubscribeAuth()
+    unsubscribeNotifications?.()
+  }
+}, [])
 
   const handleSearch = () => {
     if (searchVal.trim()) router.push(`/explore?search=${encodeURIComponent(searchVal.trim())}`)
@@ -50,18 +84,36 @@ export default function Topbar() {
       {/* ── DESKTOP BAR ── */}
       <div className="hidden lg:flex items-center h-[60px] px-8 gap-6">
 
+        
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 shrink-0 mr-5">
           <img
-            src="/logo-cg.svg"
-            alt="GG"
-            className="w-[38px] h-[30px] object-contain"
+            src="/goglobal-icon.png"
+            alt="Gonn'a Global"
+            className="h-9 w-9 object-contain"
           />
-          <div className="flex items-center" style={{ fontFamily: "Georgia, 'Times New Roman', serif", letterSpacing: "-0.01em" }}>
-            <span className="text-[22px] font-normal" style={{ color: "#B89A6A" }}>Gonn&apos;a </span>
-            <span className="text-[22px] font-bold" style={{ color: "#111111" }}>Global</span>
+          <div
+            className="flex items-center whitespace-nowrap"
+            style={{
+              fontFamily: "var(--font-lora), Georgia, 'Times New Roman', serif",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            <span
+              className="text-[22px] font-normal"
+              style={{ color: "#2563EB" }}
+            >
+              Gonn&apos;a&nbsp;
+            </span>
+            <span
+              className="text-[22px] font-bold"
+              style={{ color: "#2B1D16" }}
+            >
+              Global
+            </span>
           </div>
         </Link>
+
 
         {/* Nav links */}
         <nav className="flex items-center gap-7 text-[13.5px] shrink-0">
@@ -84,7 +136,7 @@ export default function Topbar() {
         </nav>
 
         {/* Search — grows */}
-        <div className="flex-1 mx-2 max-w-[380px]">
+       <div className="w-[340px] shrink-0 ml-auto mr-1">
           <div
             className={`flex items-center gap-2 rounded-full border bg-[#F7F7F7] px-4 py-2 transition-all duration-200 ${
               searchFocused ? "border-[#2563EB] ring-2 ring-[#2563EB]/10 bg-white" : "border-[#E5E5E5]"
@@ -109,10 +161,17 @@ export default function Topbar() {
 
         {/* Right auth */}
         {/* Notification Bell */}
-        <Link href="/notifications" className="relative flex h-9 w-9 items-center justify-center rounded-full border border-[#E0E0E0] bg-white text-[#5A5A6A] transition hover:border-[#2563EB] hover:text-[#2563EB] hover:bg-[#EEF3FF] shrink-0 ml-auto mr-2">
+       {isLoggedIn && (
+  <Link href="/notifications" className="relative flex h-9 w-9 items-center justify-center rounded-full border border-[#E0E0E0] bg-white text-[#5A5A6A] transition hover:border-[#2563EB] hover:text-[#2563EB] hover:bg-[#EEF3FF] shrink-0 mr-1">
           <Bell className="h-4 w-4" />
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#EF4444] text-[9px] font-bold text-white">3</span>
-        </Link>
+{unreadCount > 0 && (
+  <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#EF4444] px-1 text-[9px] font-bold text-white">
+    {unreadCount > 99 ? "99+" : unreadCount}
+  </span>
+)}
+
+          </Link>
+)}
         <div className="flex items-center gap-3 shrink-0">
           {!isLoggedIn ? (
             <>
@@ -128,10 +187,7 @@ export default function Topbar() {
             </>
           ) : (
             <>
-              <button className="relative flex h-9 w-9 items-center justify-center rounded-full border border-[#E5E5E5] bg-white transition hover:bg-[#F5F5F5]">
-                <Bell className="h-[18px] w-[18px] text-[#555]" />
-                <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[#EF4444] ring-1 ring-white" />
-              </button>
+              
               <Link
                 href="/profile"
                 className="flex items-center gap-2 rounded-full border border-[#E5E5E5] bg-white px-3 py-1.5 transition hover:bg-[#F5F5F5]"

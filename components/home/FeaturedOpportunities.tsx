@@ -7,119 +7,7 @@ import { Bookmark, Calendar, MapPin, Building2, Globe, ChevronRight } from "luci
 import { doc, setDoc, deleteDoc, getDoc } from "firebase/firestore"
 import { useRouter } from "next/navigation"
 
-// ─── Exact 10 opportunities from the reference image ─────────────────────
-const DEMO_OPPORTUNITIES = [
-  {
-    id: "demo-1",
-    type: "Scholarship",
-    title: "Rhodes Scholarship 2025",
-    organization: "University of Oxford",
-    location: "United Kingdom",
-    funding: "Fully Funded",
-    statusChip: "Fully Funded",
-    deadline: "Jan 5, 2025",
-    posterUrl: "https://images.unsplash.com/photo-1548637870-0ccabfe24dca?w=600&q=80",
-  },
-  {
-    id: "demo-2",
-    type: "Internship",
-    title: "Google Summer Internship 2025",
-    organization: "Google",
-    location: "Multiple Locations",
-    funding: "Stipend Provided",
-    statusChip: "Competitive",
-    deadline: "Mar 31, 2025",
-    posterUrl: "https://images.unsplash.com/photo-1573804633927-bfcbcd909acd?w=600&q=80",
-  },
-  {
-    id: "demo-3",
-    type: "Fellowship",
-    title: "UN Youth Programme 2025",
-    organization: "United Nations",
-    location: "New York, USA",
-    funding: "Partially Funded",
-    statusChip: "Partially Funded",
-    deadline: "Feb 15, 2025",
-    posterUrl: "https://images.unsplash.com/photo-1526470498-9ae73c665de8?w=600&q=80",
-  },
-  {
-    id: "demo-4",
-    type: "Conference",
-    title: "Web Summit 2025",
-    organization: "Web Summit",
-    location: "Lisbon, Portugal",
-    funding: "Paid (Selected)",
-    statusChip: "Applications Open",
-    deadline: "Nov 11, 2025",
-    posterUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&q=80",
-  },
-  {
-    id: "demo-5",
-    type: "Exchange Program",
-    title: "Erasmus+ Exchange 2025",
-    organization: "European Union",
-    location: "Multiple Countries",
-    funding: "Fully / Partially Funded",
-    statusChip: "Popular",
-    deadline: "Feb 28, 2025",
-    posterUrl: "https://images.unsplash.com/photo-1467269204594-f71cda8b6a47?w=600&q=80",
-  },
-  {
-    id: "demo-6",
-    type: "Research",
-    title: "CERN Research Programme",
-    organization: "CERN",
-    location: "Geneva, Switzerland",
-    funding: "Fully Funded",
-    statusChip: "Fully Funded",
-    deadline: "Apr 1, 2025",
-    posterUrl: "https://images.unsplash.com/photo-1576086213369-97a306d36557?w=600&q=80",
-  },
-  {
-    id: "demo-7",
-    type: "Volunteering",
-    title: "UNICEF Volunteer Programme",
-    organization: "UNICEF",
-    location: "Global",
-    funding: "Unpaid (Benefits Provided)",
-    statusChip: "Open Now",
-    deadline: "Jan 20, 2025",
-    posterUrl: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=600&q=80",
-  },
-  {
-    id: "demo-8",
-    type: "Competition",
-    title: "Hult Prize 2025",
-    organization: "Hult International Business School",
-    location: "Global",
-    funding: "Prize + Mentorship",
-    statusChip: "Applications Open",
-    deadline: "Feb 28, 2025",
-    posterUrl: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=600&q=80",
-  },
-  {
-    id: "demo-9",
-    type: "Hackathon",
-    title: "NASA Space Apps Challenge",
-    organization: "NASA",
-    location: "Global",
-    funding: "Prizes + Certification",
-    statusChip: "Open Now",
-    deadline: "Oct 5, 2025",
-    posterUrl: "https://images.unsplash.com/photo-1517976487492-5750f3195933?w=600&q=80",
-  },
-  {
-    id: "demo-10",
-    type: "Remote",
-    title: "Remote Internships Worldwide",
-    organization: "Various Organizations",
-    location: "Global",
-    funding: "Stipend / Unpaid",
-    statusChip: "Flexible",
-    deadline: "Rolling Basis",
-    posterUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&q=80",
-  },
-]
+
 
 // Type badge colors (matching reference exactly)
 const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
@@ -207,9 +95,8 @@ function OppCard({ item }: { item: any }) {
         )}
         {/* Type badge — top left */}
         <span
-          className="absolute top-2.5 left-2.5 rounded-full px-2.5 py-1 text-[11px] font-semibold"
-          style={{ backgroundColor: typeStyle.bg, color: typeStyle.text }}
-        >
+  className="absolute top-2.5 left-2.5 rounded-full border border-[#2563EB] bg-[#EEF3FF] px-2.5 py-1 text-[11px] font-semibold text-[#2563EB]"
+>
           {item.type}
         </span>
         {/* Save button — top right */}
@@ -278,25 +165,35 @@ export default function FeaturedOpportunities() {
   const [loading, setLoading] = useState(true)
   const [opps, setOpps] = useState<any[]>([])
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const q = query(collection(db, "opportunities"), orderBy("createdAt", "desc"), limit(10))
-        const snap = await getDocs(q)
-        if (!snap.empty) {
-          setOpps(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
-        } else {
-          // Use demo data when Firebase has no data (matches reference design)
-          setOpps(DEMO_OPPORTUNITIES)
-        }
-      } catch {
-        // Firebase error — show demo data
-        setOpps(DEMO_OPPORTUNITIES)
-      }
+  
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const q = query(
+        collection(db, "opportunities"),
+        orderBy("createdAt", "desc"),
+        limit(10)
+      )
+
+      const snap = await getDocs(q)
+
+      setOpps(
+        snap.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        }))
+      )
+    } catch (error) {
+      console.error("Failed to fetch opportunities:", error)
+      setOpps([])
+    } finally {
       setLoading(false)
     }
-    fetchData()
-  }, [])
+  }
+
+  fetchData()
+}, [])
+
 
   return (
     <section className="bg-white px-5 py-5 lg:px-8">
@@ -345,12 +242,29 @@ export default function FeaturedOpportunities() {
         </div>
 
         {/* 5-column × 2-row grid */}
-        <div className="relative grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-5">
-          {loading
-            ? Array.from({ length: 10 }).map((_, i) => <SkeletonCard key={i} />)
-            : opps.slice(0, 10).map((item) => <OppCard key={item.id} item={item} />)
-          }
-        </div>
+        
+<div className="relative grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-5">
+  {loading ? (
+    Array.from({ length: 10 }).map((_, i) => (
+      <SkeletonCard key={i} />
+    ))
+  ) : opps.length > 0 ? (
+    opps.map((item) => (
+      <OppCard key={item.id} item={item} />
+    ))
+  ) : (
+    <div className="col-span-full rounded-2xl border border-dashed border-[#2563EB]/30 bg-white/70 px-6 py-10 text-center">
+      <Globe className="mx-auto mb-3 h-9 w-9 text-[#2563EB]" />
+      <h3 className="text-lg font-bold text-[#1A1A2E]">
+        Opportunities Coming Soon
+      </h3>
+      <p className="mt-2 text-sm text-[#6B6B7A]">
+        New scholarships, internships, and global programs will appear here.
+      </p>
+    </div>
+  )}
+</div>
+
 
         {/* Mobile View All */}
         <div className="mt-6 flex justify-center lg:hidden">

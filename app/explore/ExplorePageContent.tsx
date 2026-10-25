@@ -3,63 +3,25 @@ import { useEffect, useState } from "react"
 import Sidebar from "@/components/home/Sidebar"
 import Topbar from "@/components/home/Topbar"
 import Link from "next/link"
-import { Search, Bookmark, MapPin, Calendar, Monitor, X, SlidersHorizontal, ChevronDown } from "lucide-react"
+import { Search, Bookmark, Share2, MapPin, Calendar, Monitor, X, SlidersHorizontal, ChevronDown } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { onAuthStateChanged } from "firebase/auth"
-import { doc, getDoc, collection, getDocs } from "firebase/firestore"
+
+import {
+  doc,
+  getDoc,
+  collection,
+  getDocs,
+  setDoc,
+  deleteDoc,
+  serverTimestamp,
+  query,
+  where,
+} from "firebase/firestore"
+
 import { auth, db } from "@/lib/firebase"
 import { isOpportunityExpired } from "@/lib/opportunityStatus"
 
-// ── Mock cards for demo when no DB data
-const MOCK_OPPORTUNITIES = [
-  {
-    id: "1", type: "Internship", title: "Software Engineering Intern", organization: "Google",
-    orgLogo: "https://www.google.com/favicon.ico", location: "Bengaluru, India", deadline: "Summer 2026",
-    mode: "Remote", tags: ["Software Development", "Machine Learning", "Internship"],
-    image: "https://images.unsplash.com/photo-1573804633927-bfcbcd909acd?w=600&q=80",
-    deadlineLabel: "Deadline: 15 Oct 2026",
-  },
-  {
-    id: "2", type: "Global Opportunity", title: "Clarendon Scholarship 2026", organization: "University of Oxford",
-    orgLogo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Oxford-Coat-Of-Arms.svg/100px-Oxford-Coat-Of-Arms.svg.png",
-    location: "UK", deadline: "2026 Intake", mode: "Fully Funded",
-    tags: ["Master's", "Research", "All Fields"],
-    image: "https://images.unsplash.com/photo-1607237138185-eedd9c632b0b?w=600&q=80",
-    deadlineLabel: "Deadline: 2 Dec 2026",
-  },
-  {
-    id: "3", type: "Hackathon", title: "NASA Space Apps Challenge 2026", organization: "NASA",
-    orgLogo: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/NASA_logo.svg/100px-NASA_logo.svg.png",
-    location: "Global", deadline: "4–6 Oct 2026", mode: "Online",
-    tags: ["Innovation", "Space Tech", "Team Event"],
-    image: "https://images.unsplash.com/photo-1446941303997-b2097da73688?w=600&q=80",
-    deadlineLabel: "Deadline: 20 Sep 2026",
-  },
-  {
-    id: "4", type: "Conference", title: "TechCrunch Disrupt 2026", organization: "TechCrunch",
-    orgLogo: "https://techcrunch.com/favicon.ico", location: "San Francisco, USA",
-    deadline: "27–29 Oct 2026", mode: "On-site",
-    tags: ["Technology", "Startups", "Networking"],
-    image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&q=80",
-    deadlineLabel: "Deadline: 10 Oct 2026",
-  },
-  {
-    id: "5", type: "Event", title: "Global Youth Leadership Summit", organization: "United Nations",
-    orgLogo: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Flag_of_the_United_Nations.svg/100px-Flag_of_the_United_Nations.svg.png",
-    location: "New York, USA", deadline: "12–14 Nov 2026", mode: "Hybrid",
-    tags: ["Leadership", "Sustainability", "Networking"],
-    image: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=600&q=80",
-    deadlineLabel: "Deadline: 5 Nov 2026",
-  },
-  {
-    id: "6", type: "Freelancing", title: "Frontend Developer (Freelance)", organization: "Toptal",
-    orgLogo: "https://www.toptal.com/favicon.ico", location: "Remote",
-    deadline: "Flexible", mode: "Paid",
-    tags: ["React", "Next.js", "Web Development"],
-    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&q=80",
-    deadlineLabel: "Deadline: 30 Sep 2026",
-  },
-]
 
 const CATEGORY_TABS = [
   { label: "All Opportunities", icon: "🌐" },
@@ -73,82 +35,267 @@ const CATEGORY_TABS = [
   { label: "Competitions", icon: "⭐" },
 ]
 
+
+
 const TYPE_COLORS: Record<string, string> = {
-  "Internship": "bg-[#FEF3C7] text-[#92400E]",
-  "Global Opportunity": "bg-[#DBEAFE] text-[#1E40AF]",
-  "Hackathon": "bg-[#EDE9FE] text-[#5B21B6]",
-  "Conference": "bg-[#D1FAE5] text-[#065F46]",
-  "Event": "bg-[#FCE7F3] text-[#9D174D]",
-  "Freelancing": "bg-[#FEE2E2] text-[#991B1B]",
-  "Sports": "bg-[#FEF3C7] text-[#D97706]",
-  "Research": "bg-[#DBEAFE] text-[#1E40AF]",
-  "Scholarship": "bg-[#D1FAE5] text-[#065F46]",
+  "Internship": "bg-[#DBEAFE] text-[#2563EB]",
+  "Internships": "bg-[#DBEAFE] text-[#2563EB]",
+  "Global Opportunity": "bg-[#DBEAFE] text-[#2563EB]",
+  "Global Opportunities": "bg-[#DBEAFE] text-[#2563EB]",
+  "Hackathon": "bg-[#DBEAFE] text-[#2563EB]",
+  "Hackathons": "bg-[#DBEAFE] text-[#2563EB]",
+  "Conference": "bg-[#DBEAFE] text-[#2563EB]",
+  "Conferences": "bg-[#DBEAFE] text-[#2563EB]",
+  "Mentorship": "bg-[#DBEAFE] text-[#2563EB]",
+  "Mentorships": "bg-[#DBEAFE] text-[#2563EB]",
+  "Scholarship": "bg-[#DBEAFE] text-[#2563EB]",
+  "Scholarships": "bg-[#DBEAFE] text-[#2563EB]",
+  "Fellowship": "bg-[#DBEAFE] text-[#2563EB]",
+  "Fellowships": "bg-[#DBEAFE] text-[#2563EB]",
+  "Event": "bg-[#DBEAFE] text-[#2563EB]",
+  "Events": "bg-[#DBEAFE] text-[#2563EB]",
+  "Cultural Events": "bg-[#DBEAFE] text-[#2563EB]",
+  "Freelancing": "bg-[#DBEAFE] text-[#2563EB]",
+  "Sports": "bg-[#DBEAFE] text-[#2563EB]",
+  "Research": "bg-[#DBEAFE] text-[#2563EB]",
+  "Competition": "bg-[#DBEAFE] text-[#2563EB]",
+  "Competitions": "bg-[#DBEAFE] text-[#2563EB]",
 }
+
 
 export default function ExplorePage() {
   const router = useRouter()
   const [opportunities, setOpportunities] = useState<any[]>([])
+const [savedOpportunityIds, setSavedOpportunityIds] = useState<string[]>([])
+const [savingOpportunityId, setSavingOpportunityId] = useState<string | null>(null)
   const [search, setSearch] = useState("")
   const [activeTab, setActiveTab] = useState("All Opportunities")
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(["Internships"])
-  const [selectedModes, setSelectedModes] = useState<string[]>(["Any mode"])
-  const [selectedLocations, setSelectedLocations] = useState<string[]>(["Anywhere"])
-  const [selectedEligibility, setSelectedEligibility] = useState<string[]>(["Students"])
-  const [selectedDeadlines, setSelectedDeadlines] = useState<string[]>(["Closing Soon"])
-  const [selectedFunding, setSelectedFunding] = useState<string[]>([])
-  const [selectedExperience, setSelectedExperience] = useState<string[]>(["All Levels"])
+ const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+
+const [selectedLocation, setSelectedLocation] = useState("Anywhere")
+const [locationSearch, setLocationSearch] = useState("")
+const [selectedModes, setSelectedModes] = useState<string[]>(["Any mode"])
+const [selectedEligibility, setSelectedEligibility] = useState<string[]>(["Open to All"])
+const [selectedDeadlines, setSelectedDeadlines] = useState<string[]>(["Any deadline"])
+const [customStartDate, setCustomStartDate] = useState("")
+const [customEndDate, setCustomEndDate] = useState("")
+const [selectedFunding, setSelectedFunding] = useState<string[]>([])
+const [selectedExperience, setSelectedExperience] = useState<string[]>(["All Levels"])
+
+const [appliedFilters, setAppliedFilters] = useState({
+  modes: ["Any mode"],
+  eligibility: ["Open to All"],
+  deadlines: ["Any deadline"],
+  funding: [] as string[],
+  experience: ["All Levels"],
+})
+
   const [activeFilters, setActiveFilters] = useState(["Internships", "Remote", "Students", "Closing Soon"])
   const [showFilters, setShowFilters] = useState(false)
   const [sortBy, setSortBy] = useState("Most Relevant")
-  const [useMock, setUseMock] = useState(false)
+ const [loading, setLoading] = useState(true)
+const [error, setError] = useState("")
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!user) { router.push("/login"); return }
+ 
+useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      router.push("/login")
+      setLoading(false)
+      return
+    }
 
-      // Get URL params
-      if (typeof window !== "undefined") {
-        const params = new URLSearchParams(window.location.search)
-        const typeParam = params.get("type") || ""
-        const searchParam = params.get("search") || ""
-        if (typeParam) setSelectedCategories([typeParam])
-        if (searchParam) setSearch(searchParam)
-      }
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search)
+      const typeParam = params.get("type") || ""
+      const searchParam = params.get("search") || ""
 
-      try {
-        const snapshot = await getDocs(collection(db, "opportunities"))
-        const fetched = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }))
-        const active = fetched.filter((o: any) => o.status !== "archived" && !isOpportunityExpired(o.deadline))
-        if (active.length > 0) {
-          setOpportunities(active)
-        } else {
-          setUseMock(true)
-          setOpportunities(MOCK_OPPORTUNITIES)
-        }
-      } catch {
-        setUseMock(true)
-        setOpportunities(MOCK_OPPORTUNITIES)
-      }
-    })
-    return () => unsubscribe()
-  }, [router])
+      if (typeParam) {
+  const categoryNames: Record<string, string> = {
+    "global opportunities": "Global Opportunities",
+    internships: "Internships",
+    hackathons: "Hackathons",
+    sports: "Sports",
+    conferences: "Conferences",
+    freelancing: "Freelancing",
+    events: "Events",
+    competitions: "Competitions",
+  }
+
+  const selectedType =
+    categoryNames[typeParam.trim().toLowerCase()] || typeParam
+
+  setSelectedCategories([selectedType])
+  setActiveTab(selectedType)
+} else {
+  setSelectedCategories([])
+  setActiveTab("All Opportunities")
+}
+
+if (searchParam) setSearch(searchParam)
+    }
+
+    setLoading(true)
+    setError("")
+
+    
+try {
+  const snapshot = await getDocs(collection(db, "opportunities"))
+
+  const fetched = snapshot.docs.map((d) => ({
+    id: d.id,
+    ...d.data(),
+  }))
+
+  setOpportunities(
+    fetched.filter((o: any) => o.status !== "archived")
+  )
+
+  // Load this user's saved opportunities from Firestore.
+  const savedQuery = query(
+    collection(db, "savedOpportunities"),
+    where("userId", "==", user.uid)
+  )
+
+  const savedSnapshot = await getDocs(savedQuery)
+
+  setSavedOpportunityIds(
+    savedSnapshot.docs
+      .map((savedDoc) => {
+        const data = savedDoc.data()
+        return data.opportunityId ||
+          (savedDoc.id.startsWith(`${user.uid}_`)
+            ? savedDoc.id.slice(user.uid.length + 1)
+            : "")
+      })
+      .filter(Boolean)
+  )
+
+
+     
+setOpportunities(
+  fetched.filter((o: any) => o.status !== "archived")
+)
+
+    } catch (error) {
+      console.error("Failed to fetch opportunities:", error)
+      setOpportunities([])
+      setError("Unable to load opportunities. Please try again.")
+    } finally {
+      setLoading(false)
+    }
+  })
+
+  return () => unsubscribe()
+}, [router])
+
 
   const removeFilter = (f: string) => setActiveFilters(activeFilters.filter(x => x !== f))
 
-  const displayData = useMock ? MOCK_OPPORTUNITIES : opportunities.filter((o) => {
-    const matchesSearch = !search || o.title?.toLowerCase().includes(search.toLowerCase()) || o.organization?.toLowerCase().includes(search.toLowerCase())
-    const matchesCat = selectedCategories.length === 0 || selectedCategories.includes(o.type)
-    return matchesSearch && matchesCat
-  })
+  
+const normalize = (value: unknown) =>
+  String(value ?? "").trim().toLowerCase().replace(/[_-]+/g, " ")
+
+
+const displayData = opportunities.filter((o: any) => {
+  const normalize = (value: unknown) =>
+    String(value ?? "").trim().toLowerCase().replace(/[_-]+/g, " ")
+
+  const searchText = normalize(search)
+  const searchableText = normalize(
+    `${o.title ?? ""} ${o.organization ?? ""} ${o.description ?? ""} ${o.location ?? ""} ${(o.tags ?? []).join?.(" ") ?? ""}`
+  )
+
+  if (searchText && !searchableText.includes(searchText)) return false
+
+  const category = normalize(o.type ?? o.category)
+  if (
+    selectedCategories.length > 0 &&
+    !selectedCategories.some((c) => {
+      const selected = normalize(c)
+      return category === selected ||
+        category.includes(selected) ||
+        selected.includes(category)
+    })
+  ) return false
+
+  const f = appliedFilters
+  const mode = normalize(o.mode)
+  if (
+    !f.modes.includes("Any mode") &&
+    f.modes.length > 0 &&
+    !f.modes.some((m) => mode.includes(normalize(m)))
+  ) return false
+
+  const eligibility = normalize(
+    Array.isArray(o.eligibility) ? o.eligibility.join(" ") : o.eligibility
+  )
+  if (
+    !f.eligibility.includes("Open to All") &&
+    f.eligibility.length > 0 &&
+    !f.eligibility.some((e) => {
+      if (e === "Open to All") return true
+      return eligibility.includes(normalize(e))
+    })
+  ) return false
+
+  const deadlineValue = o.deadline?.toDate
+    ? o.deadline.toDate()
+    : new Date(o.deadline)
+  const hasDeadline =
+    o.deadline != null && !Number.isNaN(deadlineValue.getTime())
+  const daysLeft = hasDeadline
+    ? (deadlineValue.getTime() - Date.now()) / 86400000
+    : null
+
+  if (!f.deadlines.includes("Any deadline") && f.deadlines.length > 0) {
+    if (f.deadlines.includes("Closing Soon") &&
+        !(daysLeft !== null && daysLeft >= 0 && daysLeft <= 7)) return false
+    if (f.deadlines.includes("Within 7 days") &&
+        !(daysLeft !== null && daysLeft >= 0 && daysLeft <= 7)) return false
+    
+    if (f.deadlines.includes("Custom Range")) {
+      if (!customStartDate || !customEndDate || !hasDeadline) return false
+
+      const startDate = new Date(`${customStartDate}T00:00:00`)
+      const endDate = new Date(`${customEndDate}T23:59:59.999`)
+
+      if (deadlineValue < startDate || deadlineValue > endDate) {
+        return false
+      }
+    }
+
+  }
+
+  const funding = normalize(
+    `${o.funding ?? ""} ${o.payment ?? ""} ${o.fundingType ?? ""}`
+  )
+  if (
+    f.funding.length > 0 &&
+    !f.funding.some((v) => funding.includes(normalize(v)))
+  ) return false
+
+  const experience = normalize(o.experienceLevel ?? o.experience ?? "")
+  if (
+    !f.experience.includes("All Levels") &&
+    f.experience.length > 0 &&
+    !f.experience.some((v) => experience.includes(normalize(v)))
+  ) return false
+
+  return true
+})
+
 
   return (
     <main className="min-h-screen bg-white text-[#1A1A2E]">
       <Sidebar />
       <div className="lg:ml-[80px]">
-        <Topbar />
+       
+<Topbar />
 
-        <div className="flex">
-          {/* ── MAIN CONTENT */}
+<div className="flex">
+  {/* ── MAIN CONTENT */}
+
           <div className="flex-1 min-w-0">
 
             {/* HERO BANNER */}
@@ -201,11 +348,30 @@ export default function ExplorePage() {
               </div>
 
               {/* CATEGORY TABS */}
-              <div className="mt-4 flex flex-wrap gap-2">
+              
+<div className="mt-4 flex flex-wrap items-center gap-2">
+
                 {CATEGORY_TABS.map(({ label, icon }) => (
                   <button
                     key={label}
-                    onClick={() => setActiveTab(label)}
+                    onClick={() => {
+  setActiveTab(label)
+  if (label === "All Opportunities") {
+    setSelectedCategories([])
+  } else {
+    const categoryMap: Record<string, string> = {
+      "Global Opportunities": "global",
+      Internships: "internship",
+      Hackathons: "hackathon",
+      Sports: "sports",
+      Conferences: "conference",
+      Freelancing: "freelance",
+      Events: "event",
+      Competitions: "competition",
+    }
+    setSelectedCategories([categoryMap[label] || label.toLowerCase()])
+  }
+}}
                     className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-medium transition ${
                       activeTab === label
                         ? "bg-[#2563EB] text-white"
@@ -215,139 +381,262 @@ export default function ExplorePage() {
                     <span>{icon}</span> {label}
                   </button>
                 ))}
+
+{!showFilters && (
+  <button
+    type="button"
+    onClick={() => setShowFilters(true)}
+    className="ml-auto shrink-0 rounded-lg border border-[#E0E0E0] bg-white px-4 py-2 text-[13px] font-semibold text-[#2563EB] shadow-sm transition hover:bg-[#EEF4FF]"
+  >
+    <SlidersHorizontal className="mr-2 inline h-4 w-4" />
+    All Filters
+  </button>
+)}
+
               </div>
 
-              {/* FILTER ROW */}
-              <div className="mt-4 flex flex-wrap items-center gap-3">
-                {[
-                  { label: "Location", value: "Anywhere" },
-                  { label: "Mode", value: "Any mode" },
-                  { label: "Eligibility", value: "All eligible users" },
-                  { label: "Deadline", value: "Any deadline" },
-                ].map(({ label, value }) => (
-                  <div key={label} className="flex flex-col">
-                    <span className="text-[10px] text-[#ABABAB] px-1">{label}</span>
-                    <button className="flex items-center gap-1.5 rounded-lg border border-[#E0E0E0] bg-white px-3 py-1.5 text-[13px] text-[#555] hover:border-[#2563EB] transition">
-                      📍 {value} <ChevronDown className="h-3 w-3 ml-1" />
-                    </button>
-                  </div>
-                ))}
 
-                {/* All Filters button */}
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center gap-2 rounded-lg border border-[#E0E0E0] bg-white px-3 py-2 text-[13px] font-semibold text-[#555] hover:border-[#2563EB] hover:text-[#2563EB] transition mt-4"
-                >
-                  <SlidersHorizontal className="h-4 w-4" /> All Filters
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#2563EB] text-[10px] font-bold text-white">3</span>
-                </button>
-              </div>
+             
 
-              {/* ACTIVE FILTER TAGS */}
-              {activeFilters.length > 0 && (
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  {activeFilters.map((f) => (
-                    <span key={f} className="flex items-center gap-1.5 rounded-full border border-[#DBEAFE] bg-[#EEF4FF] px-3 py-1 text-[12px] font-medium text-[#2563EB]">
-                      {f} <button onClick={() => removeFilter(f)}><X className="h-3 w-3"/></button>
-                    </span>
-                  ))}
-                  <button className="text-[12px] font-semibold text-[#EF4444] hover:underline">Clear All</button>
-                </div>
-              )}
 
-              {/* RESULTS ROW */}
-              <div className="mt-5 flex items-center justify-between">
-                <p className="text-[14px] font-semibold text-[#1A1A2E]">
-                  {displayData.length > 0 ? `1,240 Opportunities found` : "0 Opportunities found"}
-                </p>
-                <div className="flex items-center gap-2 text-[13px] text-[#555]">
-                  Sort by:
-                  <button className="flex items-center gap-1 font-semibold text-[#1A1A2E]">
-                    {sortBy} <ChevronDown className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </div>
+{loading ? (
+  <div className="mt-8 py-12 text-center text-sm text-[#687995]">
+    Loading opportunities from the database...
+  </div>
+) : error ? (
+  <div className="mt-8 rounded-2xl border border-red-200 bg-red-50 px-5 py-8 text-center">
+    <p className="font-semibold text-red-700">{error}</p>
+    <button
+      onClick={() => window.location.reload()}
+      className="mt-3 rounded-full bg-[#2563EB] px-4 py-2 text-sm font-semibold text-white"
+    >
+      Try Again
+    </button>
+  </div>
+) : displayData.length === 0 ? (
+  <div className="mt-8 rounded-2xl border border-[#E0E0E0] bg-[#FAFBFF] px-5 py-12 text-center">
+    <Search className="mx-auto h-8 w-8 text-[#9CAAC0]" />
+    <h3 className="mt-3 text-lg font-bold text-[#1A1A2E]">
+      No opportunities found
+    </h3>
+    <p className="mt-2 text-sm text-[#687995]">
+      There are no matching active opportunities right now. Try changing your search or filters.
+    </p>
+  </div>
+) : (
+  <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    {displayData.map((item) => (
+      
+<div
+  key={item.id}
+  role="link"
+  tabIndex={0}
+  onClick={() => router.push(`/opportunity/${item.id}`)}
+  onKeyDown={(e) => {
+    if (e.key === "Enter") router.push(`/opportunity/${item.id}`)
+  }}
+  className="group cursor-pointer overflow-hidden rounded-2xl border border-[#EBEBEB] bg-white shadow-sm transition-all duration-300 hover:shadow-md"
+>
 
-              {/* CARDS GRID */}
-              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {displayData.map((item) => (
-                  <div key={item.id} className="group overflow-hidden rounded-2xl border border-[#EBEBEB] bg-white shadow-sm hover:shadow-md transition-all duration-300">
-                    {/* Image */}
-                    <div className="relative h-[150px] overflow-hidden bg-gray-100">
-                      <img
-                        src={item.image || item.posterUrl || "https://images.unsplash.com/photo-1573804633927-bfcbcd909acd?w=600&q=80"}
-                        alt={item.title}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                      {/* Type badge */}
-                      <span className={`absolute left-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold ${TYPE_COLORS[item.type] || "bg-gray-100 text-gray-700"}`}>
-                        {item.type}
-                      </span>
-                      {/* Bookmark btn */}
-                      <button className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md text-[#555] opacity-0 group-hover:opacity-100 transition-opacity hover:text-[#2563EB]">
-                        <Bookmark className="h-4 w-4" />
-                      </button>
-                    </div>
+        <div className="relative h-[150px] overflow-hidden bg-gray-100">
+          <img
+            src={item.image || item.posterUrl || "https://images.unsplash.com/photo-1573804633927-bfcbcd909acd?w=600&q=80"}
+            alt={item.title || "Opportunity"}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+          <span className={`absolute left-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+  TYPE_COLORS[item.type] ||
+  (String(item.type || item.category || "").toLowerCase().includes("global")
+    ? "bg-[#DBEAFE] text-[#2563EB]"
+    : "bg-gray-100 text-gray-700")
+}`}>
+            {item.type}
+          </span>
+          
+<button
+  type="button"
+  aria-label={
+    savedOpportunityIds.includes(item.id)
+      ? `Unsave ${item.title || "opportunity"}`
+      : `Save ${item.title || "opportunity"}`
+  }
+  disabled={savingOpportunityId === item.id}
+  onClick={async (e) => {
+  e.stopPropagation()
+    const user = auth.currentUser
+    if (!user) {
+      router.push("/login")
+      return
+    }
 
-                    {/* Content */}
-                    <div className="p-4">
-                      <h3 className="text-[14px] font-bold text-[#1A1A2E] line-clamp-1">{item.title}</h3>
-                      <div className="mt-1.5 flex items-center gap-2">
-                        {item.orgLogo && (
-                          <img src={item.orgLogo} alt="" className="h-5 w-5 rounded object-contain" onError={(e) => { e.currentTarget.style.display = "none" }} />
-                        )}
-                        <span className="text-[13px] text-[#687995] font-medium">{item.organization}</span>
-                      </div>
+    setSavingOpportunityId(item.id)
 
-                      <div className="mt-3 flex flex-wrap items-center gap-2 text-[11.5px] text-[#687995]">
-                        <span className="flex items-center gap-1"><MapPin className="h-3 w-3"/> {item.location}</span>
-                        <span className="flex items-center gap-1"><Calendar className="h-3 w-3"/> {item.deadline}</span>
-                        <span className="flex items-center gap-1"><Monitor className="h-3 w-3"/> {item.mode}</span>
-                      </div>
+    try {
+      const savedRef = doc(
+  db,
+  "savedOpportunities",
+  `${user.uid}_${item.id}`
+)
 
-                      {/* Tags */}
-                      <div className="mt-2.5 flex flex-wrap gap-1.5">
-                        {(item.tags || []).slice(0, 3).map((tag: string) => (
-                          <span key={tag} className="rounded-full bg-[#F0F0F0] px-2.5 py-0.5 text-[11px] text-[#555]">{tag}</span>
-                        ))}
-                      </div>
+      if (savedOpportunityIds.includes(item.id)) {
+        await deleteDoc(savedRef)
+        setSavedOpportunityIds((previous) =>
+          previous.filter((id) => id !== item.id)
+        )
+      } else {
+       await setDoc(savedRef, {
+  userId: user.uid,
+  opportunityId: item.id,
+  savedAt: serverTimestamp(),
+})
+        setSavedOpportunityIds((previous) =>
+          [...previous, item.id]
+        )
+      }
+    } catch (error) {
+  console.error("Failed to update saved opportunity:", error)
 
-                      {/* Deadline + CTA */}
-                      <div className="mt-3 flex items-center justify-between border-t border-[#F0F0F0] pt-3">
-                        <span className="text-[11.5px] text-[#687995] flex items-center gap-1">
-                          <Calendar className="h-3 w-3"/> {item.deadlineLabel || `Deadline: ${item.deadline}`}
-                        </span>
-                        <Link
-                          href={`/opportunity/${item.id}`}
-                          className="flex items-center gap-1 rounded-full border border-[#2563EB] px-3 py-1 text-[12px] font-semibold text-[#2563EB] hover:bg-[#2563EB] hover:text-white transition"
-                        >
-                          View Details →
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+  if (error instanceof Error) {
+    alert(`Save failed: ${error.message}`)
+  } else {
+    alert("Could not update saved opportunity. Check the browser console.")
+  }
+} finally {
+      setSavingOpportunityId(null)
+    }
+  }}
+  className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#2563EB] shadow-md transition hover:bg-[#DBEAFE] disabled:opacity-50"
+>
+  <Bookmark
+    className="h-4 w-4"
+    fill={savedOpportunityIds.includes(item.id) ? "currentColor" : "none"}
+  />
+</button>
 
-            </div>
+        </div>
+
+        <div className="p-4">
+          <h3 className="line-clamp-1 text-[14px] font-bold text-[#1A1A2E]">
+            {item.title}
+          </h3>
+          <div className="mt-1.5 flex items-center gap-2">
+            {item.orgLogo && (
+              <img
+                src={item.orgLogo}
+                alt=""
+                className="h-5 w-5 rounded object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none"
+                }}
+              />
+            )}
+            <span className="text-[13px] font-medium text-[#687995]">
+              {item.organization}
+            </span>
           </div>
 
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-[11.5px] text-[#687995]">
+            {item.location && (
+              <span className="flex items-center gap-1">
+                <MapPin className="h-3 w-3" /> {item.location}
+              </span>
+            )}
+            {item.deadline && (
+              <span className="flex items-center gap-1">
+                <Calendar className="h-3 w-3" /> {item.deadline}
+              </span>
+            )}
+            {item.mode && (
+              <span className="flex items-center gap-1">
+                <Monitor className="h-3 w-3" /> {item.mode}
+              </span>
+            )}
+          </div>
+
+          <div className="mt-2.5 flex flex-wrap gap-1.5">
+            {(item.tags || []).slice(0, 3).map((tag: string) => (
+              <span
+                key={tag}
+                className="rounded-full bg-[#F0F0F0] px-2.5 py-0.5 text-[11px] text-[#555]"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+
+         <div className="mt-3 flex items-center justify-between gap-2 border-t border-[#F0F0F0] pt-3">
+            <span className="flex items-center gap-1 text-[11.5px] text-[#687995]">
+              <Calendar className="h-3 w-3" />
+              {item.deadlineLabel || (item.deadline ? `Deadline: ${item.deadline}` : "Deadline not specified")}
+            </span>
+<div className="flex shrink-0 items-center gap-2">
+<button
+  type="button"
+  aria-label={`Share ${item.title || "opportunity"}`}
+  onClick={async (e) => {
+    e.stopPropagation()
+
+    const shareUrl = `${window.location.origin}/opportunity/${item.id}`
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: item.title || "Opportunity",
+          url: shareUrl,
+        })
+      } else {
+        await navigator.clipboard.writeText(shareUrl)
+        alert("Opportunity link copied!")
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name !== "AbortError") {
+        try {
+          await navigator.clipboard.writeText(shareUrl)
+          alert("Opportunity link copied!")
+        } catch {
+          alert(`Copy this link: ${shareUrl}`)
+        }
+      }
+    }
+  }}
+  className="flex shrink-0 items-center justify-center rounded-full border border-[#2563EB] p-1.5 text-[#2563EB] transition hover:bg-[#DBEAFE]"
+  title="Share opportunity"
+>
+  <Share2 className="h-4 w-4" />
+</button>
+
+            <Link
+              href={`/opportunity/${item.id}`}
+              className="flex shrink-0 items-center gap-1 rounded-full border border-[#2563EB] px-3 py-1 text-[12px] font-semibold text-[#2563EB] transition hover:bg-[#2563EB] hover:text-white"
+            >
+              View Details →
+            </Link>
+</div>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+)}
+          </div>
+       </div>
+
           {/* ── RIGHT FILTER PANEL (always shown on xl) */}
-          <div className="hidden xl:block w-[280px] shrink-0 border-l border-[#EBEBEB] bg-white">
+        {showFilters && (
+  <div className="hidden xl:block w-[280px] shrink-0 border-l border-[#EBEBEB] bg-white">
             <div className="sticky top-[60px] overflow-y-auto max-h-[calc(100vh-60px)] p-5">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-[15px] font-bold text-[#1A1A2E]">All Filters</h3>
-                <button className="text-[#ABABAB] hover:text-[#555]"><X className="h-4 w-4"/></button>
+                <button
+  onClick={() => setShowFilters(false)}
+  className="text-[#ABABAB] hover:text-[#555]"
+  aria-label="Close filters"
+>
+  <X className="h-4 w-4" />
+</button>
               </div>
 
-              {/* Category */}
-              <FilterSection title="Category" defaultOpen>
-                {["Global Opportunities","Internships","Hackathons","Sports","Conferences","Freelancing","Events","Competitions"].map((c) => (
-                  <label key={c} className="flex items-center gap-2 text-[13px] text-[#555] cursor-pointer">
-                    <input type="checkbox" className="rounded border-[#E0E0E0] accent-[#2563EB]" defaultChecked={c==="Internships"} /> {c}
-                  </label>
-                ))}
-              </FilterSection>
+             
 
               <div className="my-4 border-t border-[#F0F0F0]"/>
 
@@ -355,12 +644,31 @@ export default function ExplorePage() {
               <FilterSection title="Location" defaultOpen>
                 <div className="flex items-center gap-2 rounded-lg border border-[#E0E0E0] px-3 py-1.5 mb-3">
                   <Search className="h-3.5 w-3.5 text-[#ABABAB]"/>
-                  <input type="text" placeholder="Search country or city..." className="flex-1 bg-transparent text-[12px] outline-none placeholder:text-[#ABABAB]"/>
+                  
+<input
+  type="text"
+  placeholder="Search region..."
+  value={locationSearch}
+  onChange={(e) => setLocationSearch(e.target.value)}
+  className="flex-1 bg-transparent text-[12px] outline-none placeholder:text-[#ABABAB]"
+/>
+
                 </div>
                 <div className="grid grid-cols-2 gap-y-2">
-                  {["Anywhere","UK","India","Canada","USA","Other Countries"].map((l) => (
+                 {["Anywhere","Asia","Europe","Africa","South America","North America","Australia","Others"]
+  .filter((l) => l.toLowerCase().includes(locationSearch.trim().toLowerCase()))
+  .map((l) => (
                     <label key={l} className="flex items-center gap-2 text-[13px] text-[#555] cursor-pointer">
-                      <input type="radio" name="location" className="accent-[#2563EB]" defaultChecked={l==="Anywhere"}/> {l}
+                      
+<input
+  type="radio"
+  name="location"
+  className="accent-[#2563EB]"
+  checked={selectedLocation === l}
+  onChange={() => setSelectedLocation(l)}
+/>
+{l}
+
                     </label>
                   ))}
                 </div>
@@ -373,7 +681,23 @@ export default function ExplorePage() {
                 <div className="grid grid-cols-2 gap-y-2">
                   {["Online","On-site","Hybrid","Any mode"].map((m) => (
                     <label key={m} className="flex items-center gap-2 text-[13px] text-[#555] cursor-pointer">
-                      <input type="checkbox" className="rounded border-[#E0E0E0] accent-[#2563EB]" defaultChecked={m==="Any mode"}/> {m}
+                      
+<input
+  type="checkbox"
+  className="rounded border-[#E0E0E0] accent-[#2563EB]"
+  checked={selectedModes.includes(m)}
+  onChange={(e) => {
+    setSelectedModes((prev) =>
+      m === "Any mode"
+        ? e.target.checked ? ["Any mode"] : []
+        : e.target.checked
+          ? [...prev.filter((v) => v !== "Any mode"), m]
+          : prev.filter((v) => v !== m)
+    )
+  }}
+/>
+{m}
+
                     </label>
                   ))}
                 </div>
@@ -386,7 +710,23 @@ export default function ExplorePage() {
                 <div className="grid grid-cols-2 gap-y-2">
                   {["Students","Professionals","Graduates","Open to All"].map((e) => (
                     <label key={e} className="flex items-center gap-2 text-[13px] text-[#555] cursor-pointer">
-                      <input type="checkbox" className="rounded border-[#E0E0E0] accent-[#2563EB]" defaultChecked={e==="Students"}/> {e}
+                      
+<input
+  type="checkbox"
+  className="rounded border-[#E0E0E0] accent-[#2563EB]"
+  checked={selectedEligibility.includes(e)}
+  onChange={(event) => {
+    setSelectedEligibility((prev) =>
+      event.target.checked
+        ? e === "Open to All"
+          ? ["Open to All"]
+          : [...prev.filter((v) => v !== "Open to All"), e]
+        : prev.filter((v) => v !== e)
+    )
+  }}
+/>
+{e}
+
                     </label>
                   ))}
                 </div>
@@ -399,20 +739,75 @@ export default function ExplorePage() {
                 <div className="grid grid-cols-2 gap-y-2">
                   {["Any deadline","Closing Soon","Within 30 days","Within 7 days","Custom Range"].map((d) => (
                     <label key={d} className="flex items-center gap-2 text-[13px] text-[#555] cursor-pointer col-span-1">
-                      <input type="radio" name="deadline" className="accent-[#2563EB]" defaultChecked={d==="Closing Soon"}/> {d}
+                      
+<input
+  type="radio"
+  name="deadline"
+  className="accent-[#2563EB]"
+  checked={selectedDeadlines.includes(d)}
+  onChange={() => setSelectedDeadlines([d])}
+/>
+{d}
+
                     </label>
                   ))}
+                
                 </div>
+
+                {selectedDeadlines.includes("Custom Range") && (
+                  <div className="mt-3 grid grid-cols-1 gap-3">
+                    <div>
+                      <label className="mb-1 block text-xs text-[#555]">
+                        Start Date
+                      </label>
+                      <input
+                        type="date"
+                        value={customStartDate}
+                        max={customEndDate || undefined}
+                        onChange={(e) => setCustomStartDate(e.target.value)}
+                        className="w-full rounded-lg border border-[#E0E0E0] p-2 text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-1 block text-xs text-[#555]">
+                        End Date
+                      </label>
+                      <input
+                        type="date"
+                        value={customEndDate}
+                        min={customStartDate || undefined}
+                        onChange={(e) => setCustomEndDate(e.target.value)}
+                        className="w-full rounded-lg border border-[#E0E0E0] p-2 text-sm"
+                      />
+                    </div>
+                  </div>
+                )}
               </FilterSection>
 
               <div className="my-4 border-t border-[#F0F0F0]"/>
 
               {/* Funding */}
+
               <FilterSection title="Funding / Payment">
                 <div className="grid grid-cols-2 gap-y-2">
                   {["Fully Funded","Unpaid","Partially Funded","Free to Participate","Paid","Paid Registration"].map((f) => (
                     <label key={f} className="flex items-center gap-2 text-[13px] text-[#555] cursor-pointer">
-                      <input type="checkbox" className="rounded border-[#E0E0E0] accent-[#2563EB]"/> {f}
+                      
+<input
+  type="checkbox"
+  className="rounded border-[#E0E0E0] accent-[#2563EB]"
+  checked={selectedFunding.includes(f)}
+  onChange={(event) => {
+    setSelectedFunding((prev) =>
+      event.target.checked
+        ? [...prev, f]
+        : prev.filter((v) => v !== f)
+    )
+  }}
+/>
+{f}
+
                     </label>
                   ))}
                 </div>
@@ -425,7 +820,16 @@ export default function ExplorePage() {
                 <div className="grid grid-cols-2 gap-y-2">
                   {["Beginner","Advanced","Intermediate","All Levels"].map((e) => (
                     <label key={e} className="flex items-center gap-2 text-[13px] text-[#555] cursor-pointer">
-                      <input type="radio" name="exp" className="accent-[#2563EB]" defaultChecked={e==="All Levels"}/> {e}
+                      
+<input
+  type="radio"
+  name="exp"
+  className="accent-[#2563EB]"
+  checked={selectedExperience.includes(e)}
+  onChange={() => setSelectedExperience([e])}
+/>
+{e}
+
                     </label>
                   ))}
                 </div>
@@ -433,23 +837,64 @@ export default function ExplorePage() {
 
               {/* CTA buttons */}
               <div className="mt-6 flex gap-2">
-                <button className="flex-1 rounded-xl border border-[#E0E0E0] py-2.5 text-[13px] font-semibold text-[#555] hover:border-[#2563EB] hover:text-[#2563EB] transition">
-                  Clear All
-                </button>
-                <button className="flex-1 rounded-xl bg-[#2563EB] py-2.5 text-[13px] font-semibold text-white hover:bg-[#1D4ED8] transition">
-                  Apply Filters (24)
-                </button>
+                
+<button
+  type="button"
+  onClick={() => {
+    setSelectedLocation("Anywhere")
+    setLocationSearch("")
+    setSelectedModes(["Any mode"])
+    setSelectedEligibility(["Open to All"])
+    setSelectedDeadlines(["Any deadline"])
+    setCustomStartDate("")
+    setCustomEndDate("")
+    setSelectedFunding([])
+    setSelectedExperience(["All Levels"])
+
+    setAppliedFilters({
+      modes: ["Any mode"],
+      eligibility: ["Open to All"],
+      deadlines: ["Any deadline"],
+      funding: [],
+      experience: ["All Levels"],
+    })
+  }}
+  className="flex-1 rounded-xl border border-[#E0E0E0] py-2.5 text-[13px] font-semibold text-[#555] hover:border-[#2563EB] hover:text-[#2563EB] transition"
+>
+  Clear All
+</button>
+
+                
+<button
+  type="button"
+  onClick={() => {
+    setAppliedFilters({
+      modes: [...selectedModes],
+      eligibility: [...selectedEligibility],
+      deadlines: [...selectedDeadlines],
+      funding: [...selectedFunding],
+      experience: [...selectedExperience],
+    })
+  }}
+  className="flex-1 rounded-xl bg-[#2563EB] py-2.5 text-[13px] font-semibold text-white hover:bg-[#1D4ED8] transition"
+>
+  Apply Filters
+</button>
+
               </div>
             </div>
           </div>
+ )}
         </div>
       </div>
     </main>
   )
 }
 
-function FilterSection({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
+
+function FilterSection({ title, children, defaultOpen = true }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen)
+
   return (
     <div>
       <button onClick={() => setOpen(!open)} className="flex w-full items-center justify-between py-1">

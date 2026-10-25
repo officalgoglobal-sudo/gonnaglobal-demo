@@ -59,15 +59,7 @@ useEffect(() => {
     
       const userData = userDoc.data()
     
-      if (userData?.role === "recruiter") {
-
-        router.push("/")
-      
-      } else {
-      
-        router.push("/onboarding/interests")
-      
-      }
+      router.replace("/")
     
     } else {
     

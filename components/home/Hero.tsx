@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 interface HeroProps {
@@ -65,7 +65,7 @@ export default function Hero({ fullName, isLoggedIn, userType }: HeroProps) {
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
-          minHeight: "530px",
+          minHeight: "700px",
           position: "relative",
           zIndex: 1,
         }}
@@ -75,33 +75,39 @@ export default function Hero({ fullName, isLoggedIn, userType }: HeroProps) {
           style={{
             display: "flex",
             flexDirection: "column",
-            justifyContent: "center",
-            padding: "44px 40px 44px 44px",
+            justifyContent: "space-between",
+padding: "60px 40px 50px 60px",
           }}
         >
           {/* Eyebrow */}
-          <p
-            style={{
-              fontSize: "13px",
-              color: "#6B6B6B",
-              fontWeight: 400,
-              letterSpacing: "0.01em",
-              marginBottom: "10px",
-              fontFamily: "system-ui, -apple-system, sans-serif",
-            }}
-          >
-            Your global journey starts here
-          </p>
+         {/* Tagline */}
+{/* Brand tagline */}
+<p
+  style={{
+    fontSize: "18px",
+    color: "#2563EB",
+    fontWeight: 700,
+    letterSpacing: "0.02em",
+    lineHeight: 1.7,
+transform: "translateY(-5px)",
+    marginBottom: "18px",
+    fontFamily: "system-ui, -apple-system, sans-serif",
+  }}
+>
+  Go beyond your limits.
+  <br />
+  Go beyond your borders.
+</p>
 
           {/* Main heading — matching reference exactly */}
           <h1
             style={{
               fontFamily: "Georgia, 'Times New Roman', serif",
-              fontSize: "72px",
+             fontSize: "64px",
               fontWeight: 700,
               lineHeight: 1.05,
               color: "#111111",
-              margin: 0,
+              margin: "35px 0 0 0",
               padding: 0,
             }}
           >
@@ -123,7 +129,9 @@ export default function Hero({ fullName, isLoggedIn, userType }: HeroProps) {
           {/* Description — PLAIN text, no highlights */}
           <p
             style={{
-              marginTop: "20px",
+              marginTop: "auto",
+paddingTop: "20px",
+paddingBottom: "10px",
               fontSize: "15.5px",
               lineHeight: 1.65,
               color: "#555555",
@@ -176,13 +184,14 @@ export default function Hero({ fullName, isLoggedIn, userType }: HeroProps) {
           </div>
 
           {/* Stats row */}
-          <div
-            style={{
-              marginTop: "32px",
-              display: "flex",
-              gap: 0,
-            }}
-          >
+<div
+  style={{
+    marginTop: "auto",
+    paddingTop: "30px",
+    display: "flex",
+    gap: 0,
+  }}
+>
             {STATS.map((s, i) => (
               <div
                 key={s.label}

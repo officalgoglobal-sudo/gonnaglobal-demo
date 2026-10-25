@@ -46,6 +46,8 @@ export default function OpportunityPage() {
   useState(false)
   const [applicationsCount, setApplicationsCount] =
   useState(0)
+  const [showProfilePopup, setShowProfilePopup] = useState(false)
+  const [profileCompletion, setProfileCompletion] = useState<number | null>(null)
   
   useEffect(() => {
   
@@ -62,10 +64,31 @@ export default function OpportunityPage() {
   
       if (snapshot.exists()) {
   
+        const opportunityData = snapshot.data()
+
         setOpportunity({
           id: snapshot.id,
-          ...snapshot.data(),
+          ...opportunityData,
         })
+
+        const currentUser = auth.currentUser
+        if (currentUser) {
+          try {
+            await setDoc(
+              doc(db, "recentlyViewedOpportunities", `${currentUser.uid}_${snapshot.id}`),
+              {
+                userId: currentUser.uid,
+                opportunityId: snapshot.id,
+                title: opportunityData.title || opportunityData.name || "Opportunity",
+                organization: opportunityData.organization || opportunityData.company || opportunityData.university || "Opportunity",
+                viewedAt: serverTimestamp(),
+              }
+            )
+          } catch (error) {
+            console.error("Could not record opportunity view:", error)
+          }
+        }
+
         const savedRef = doc(
           db,
           "savedOpportunities",
@@ -200,6 +223,71 @@ export default function OpportunityPage() {
     }
   
   }
+
+  const calculateProfileCompletion = (data: any) => {
+    const hasText = (value: any) =>
+      typeof value === "string" && value.trim().length > 0
+
+    const basicComplete = [
+      data.fullName || data.displayName,
+      data.email,
+      data.phone || data.phoneNumber,
+      data.homeCountry || data.country,
+      data.city,
+    ].every(hasText)
+
+    const professionalComplete = [
+      data.professionalTitle,
+      data.headline,
+      data.currentRole,
+      data.company,
+    ].some(hasText)
+
+    const areasComplete =
+      Array.isArray(data.mentorshipAreas) && data.mentorshipAreas.length >= 4
+
+    const languagesComplete =
+      Array.isArray(data.languages) && data.languages.length >= 2
+
+    const experienceComplete =
+      Array.isArray(data.experiences) && data.experiences.length > 0 ||
+      Array.isArray(data.experience) && data.experience.length > 0
+
+    const websiteComplete =
+      hasText(data.website) || hasText(data.portfolio)
+
+    const sections = [
+      basicComplete,
+      professionalComplete,
+      areasComplete,
+      languagesComplete,
+      experienceComplete,
+      websiteComplete,
+    ]
+
+    return Math.round(
+      (sections.filter(Boolean).length / sections.length) * 100
+    )
+  }
+
+  const checkProfileCompletion = async () => {
+    const currentUser = auth.currentUser
+    if (!currentUser) return false
+
+    const profileSnap = await getDoc(doc(db, "users", currentUser.uid))
+    const pct = profileSnap.exists()
+      ? calculateProfileCompletion(profileSnap.data())
+      : 0
+
+    setProfileCompletion(pct)
+
+    if (pct < 75) {
+      setShowProfilePopup(true)
+      return false
+    }
+    return true
+  }
+
   const handleApply = async () => {
 
     if (!opportunity)
@@ -215,6 +303,8 @@ export default function OpportunityPage() {
       return
     }
   
+    if (!(await checkProfileCompletion())) return
+
     try {
   
       const applicationRef = doc(
@@ -279,6 +369,8 @@ export default function OpportunityPage() {
       return
     }
   
+    if (!(await checkProfileCompletion())) return
+
     try {
   
       const applicationRef = doc(
@@ -335,7 +427,7 @@ export default function OpportunityPage() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F8F5F0]">
 
-        <h1 className="text-2xl sm:text-3xl font-semibold">
+        <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
           Opportunity not found
         </h1>
 
@@ -350,18 +442,18 @@ export default function OpportunityPage() {
 
       {/* HERO */}
 
-      <section className="border-b border-[#E7DDD1] bg-gradient-to-b from-[#FFFDF9] to-[#F8F5F0] ">
+      <section className="border-b border-[#E7DDD1] bg-[#F8F5F0] ">
 
-      <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
-      <div className="grid gap-8 lg:grid-cols-[360px_1fr] lg:items-start">
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
+      <div className="grid items-start gap-7 lg:grid-cols-[minmax(280px,0.85fr)_minmax(0,1.15fr)] lg:gap-10">
       {opportunity.posterUrl && (
 
-<div className="overflow-hidden rounded-[32px] border border-[#E7DDD1] bg-white">
+<div className="overflow-hidden rounded-[28px] border border-[#E7DDD1] bg-[#FFFDF9] p-2 shadow-sm sm:rounded-[32px] sm:p-3">
 
 <img
   src={opportunity.posterUrl}
   alt={opportunity.title}
-  className="h-auto max-h-[700px] w-full object-contain"
+  className="max-h-[520px] w-full object-contain transition duration-300 sm:max-h-[600px]"
 />
 
 </div>
@@ -373,48 +465,41 @@ export default function OpportunityPage() {
             {opportunity.organization}
           </p>
 
-          <h1 className="mt-4 max-w-4xl text-2xl sm:text-3xl font-bold leading-[1.02] tracking-tight sm:text-4xl xl:text-5xl">
+          <h1 className="mt-3 max-w-4xl text-3xl font-bold leading-tight tracking-tight sm:text-4xl xl:text-5xl">
 
             {opportunity.title}
 
           </h1>
 
-          <p className="mt-6 max-w-3xl text-[17px] leading-8 text-[#6B5B52] sm:text-[18px]">
-
-  {opportunity.description}
-
-</p>
+          {opportunity.description && (
+            <p className="mt-4 max-w-3xl whitespace-pre-line text-base leading-7 text-[#6B5B52] sm:text-lg sm:leading-8">
+              {opportunity.description.length > 240
+                ? `${opportunity.description.slice(0, 240).trim()}…`
+                : opportunity.description}
+            </p>
+          )}
 
            
 
           {/* TAGS */}
-
-          <div className="mt-8 flex flex-wrap gap-3">
-
-            <Badge>
-              {opportunity.type}
-            </Badge>
-
-            <Badge>
-              {opportunity.location}
-            </Badge>
-
-            <Badge>
-              {opportunity.mode}
-            </Badge>
-            <Badge>
-  {opportunity.careerDomain}
-</Badge>
-
-<Badge>
-  {opportunity.funding}
-</Badge>
-
+          <div className="mt-6 flex flex-wrap gap-2">
+            {[
+              ["Type", opportunity.type],
+              ["Location", opportunity.location],
+              ["Mode", opportunity.mode],
+              ["Domain", opportunity.careerDomain],
+              ["Funding", opportunity.funding],
+              ["Experience", opportunity.experienceLevel],
+            ].filter(([, value]) => value != null && String(value).trim() !== "").map(([label, value]) => (
+              <span key={label} className="inline-flex items-center rounded-full border border-[#E7DDD1] bg-[#FFFDF9] px-3.5 py-2 text-xs font-medium text-[#6B5B52] sm:text-sm">
+                <span className="mr-1.5 text-[#8B7355]">{label}:</span> {value}
+              </span>
+            ))}
           </div>
 
           {/* META */}
 
-          <div className="mt-8 flex flex-wrap items-center gap-6 text-sm text-[#8B7355]">
+          <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-[#8B7355]">
 
             <div className="flex items-center gap-2">
 
@@ -436,25 +521,25 @@ export default function OpportunityPage() {
 
               <CalendarDays className="h-4 w-4" />
 
-              Deadline: {opportunity.deadline}
+              {opportunity.deadlineType === "No Deadline" ? "No deadline" : opportunity.deadlineType === "Rolling" ? "Rolling applications" : opportunity.deadline ? `Deadline: ${opportunity.deadline}` : ""}
 
             </div>
 
             </div>
 
-<div className="mt-10 flex flex-wrap gap-4">
+<div className="mt-7 flex flex-wrap gap-3">
 
-  <div className="rounded-2xl bg-[#2563EB] px-5 py-3 text-sm font-medium text-white">
+  {opportunity.funding && (
+    <div className="rounded-2xl bg-[#2563EB] px-5 py-3 text-sm font-semibold text-white">
+      {opportunity.funding}
+    </div>
+  )}
 
-    {opportunity.funding || "Global Opportunity"}
-
-  </div>
-
-  <div className="rounded-2xl border border-[#E7DDD1] bg-[#FFFDF9] px-5 py-3 text-sm font-medium">
-
-    {opportunity.deadlineType || "Open"}
-
-  </div>
+  {opportunity.deadlineType && (
+    <div className="rounded-2xl border border-[#E7DDD1] bg-[#FFFDF9] px-5 py-3 text-sm font-medium text-[#2B1D16]">
+      {opportunity.deadlineType}
+    </div>
+  )}
 
   {opportunity.applicationLink && (
 
@@ -481,23 +566,23 @@ export default function OpportunityPage() {
 
       {/* MAIN CONTENT */}
 
-      <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10 lg:py-16">
+      <section className="mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_360px] lg:gap-10">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8">
 
           {/* LEFT */}
 
-          <div className="space-y-8">
+          <div className="space-y-5 sm:space-y-6">
 
             {/* ABOUT */}
 
-            <div className="rounded-[32px] border border-[#E7DDD1] bg-[#FFFDF9] shadow-sm p-6 sm:p-8 lg:p-10">
+            <div className="rounded-3xl border border-[#E7DDD1] bg-[#FFFDF9] p-6 shadow-[0_2px_8px_rgba(43,29,22,0.04)] sm:p-8 lg:rounded-[28px]">
 
-              <h2 className="text-2xl sm:text-3xl font-semibold">
+              <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
               ✨ About this opportunity
               </h2>
 
-              <p className="mt-6 leading-8 text-[#6B5B52]">
+              <p className="mt-4 whitespace-pre-line text-sm leading-7 text-[#6B5B52] sm:text-base sm:leading-8">
 
   {opportunity.description}
 
@@ -509,13 +594,13 @@ export default function OpportunityPage() {
 
             {opportunity.eligibility && (
 
-<div className="rounded-[32px] border border-[#E7DDD1] bg-[#FFFDF9] p-6 sm:p-8 lg:p-10">
+<div className="rounded-3xl border border-[#E7DDD1] bg-[#FFFDF9] p-6 shadow-[0_2px_8px_rgba(43,29,22,0.04)] sm:p-8 lg:rounded-[28px]">
 
-              <h2 className="text-2xl sm:text-3xl font-semibold">
+              <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
               🎯 Eligibility
               </h2>
 
-              <p className="mt-6 whitespace-pre-line leading-8 text-[#6B5B52]">
+              <p className="mt-4 whitespace-pre-line text-sm leading-7 text-[#6B5B52] sm:text-base sm:leading-8">
 
   {opportunity.eligibility}
 
@@ -528,13 +613,13 @@ export default function OpportunityPage() {
 
 {opportunity.responsibilities && (
 
-<div className="rounded-[32px] border border-[#E7DDD1] bg-[#FFFDF9] shadow-sm p-6 sm:p-8 lg:p-10">
+<div className="rounded-3xl border border-[#E7DDD1] bg-[#FFFDF9] p-6 shadow-[0_2px_8px_rgba(43,29,22,0.04)] sm:p-8 lg:rounded-[28px]">
 
-              <h2 className="text-2xl sm:text-3xl font-semibold">
+              <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
               🛠 Responsibilities
               </h2>
 
-              <p className="mt-6 whitespace-pre-line leading-8 text-[#6B5B52]">
+              <p className="mt-4 whitespace-pre-line text-sm leading-7 text-[#6B5B52] sm:text-base sm:leading-8">
 
   {opportunity.responsibilities}
 
@@ -546,13 +631,13 @@ export default function OpportunityPage() {
 
           {opportunity.benefits && (
 
-<div className="rounded-[32px] border border-[#E7DDD1] bg-[#FFFDF9] shadow-sm p-6 sm:p-8 lg:p-10">
+<div className="rounded-3xl border border-[#E7DDD1] bg-[#FFFDF9] p-6 shadow-[0_2px_8px_rgba(43,29,22,0.04)] sm:p-8 lg:rounded-[28px]">
 
-  <h2 className="text-2xl sm:text-3xl font-semibold">
+  <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
   🎁 Benefits
   </h2>
 
-  <p className="mt-6 whitespace-pre-line leading-8 text-[#6B5B52]">
+  <p className="mt-4 whitespace-pre-line text-sm leading-7 text-[#6B5B52] sm:text-base sm:leading-8">
 
   {opportunity.benefits}
 
@@ -565,7 +650,7 @@ export default function OpportunityPage() {
 </div>
           {/* RIGHT SIDEBAR */}
 
-          <div className="rounded-[28px] border border-[#E7DDD1] bg-[#FFFDF9] p-6 shadow-sm lg:sticky lg:top-28 lg:h-fit lg:rounded-[32px] lg:p-8">
+          <div className="rounded-3xl border border-[#E7DDD1] bg-[#FFFDF9] p-5 shadow-[0_8px_30px_rgba(43,29,22,0.05)] sm:p-6 lg:sticky lg:top-6 lg:h-fit lg:rounded-[28px]">
 
             {/* TOP */}
 
@@ -608,91 +693,40 @@ export default function OpportunityPage() {
 </div>
 
             {/* DETAILS */}
-
-            <div className="mt-10 space-y-7">
-
-            <div className="rounded-2xl bg-[#F8F5F0] p-5">
-
-<p className="text-sm text-[#8B7355]">
-  Opportunity Type
-</p>
-
-<h3 className="mt-2 text-lg font-semibold">
-  {opportunity.type}
-</h3>
-
-</div>
-
-              <div>
-
-                <p className="text-sm text-[#8B7355]">
-                  Location
-                </p>
-
-                <h3 className="mt-2 text-lg font-semibold">
-                  {opportunity.location}
-                </h3>
-
-              </div>
-
-              <div>
-
-                <p className="text-sm text-[#8B7355]">
-                  Mode
-                </p>
-
-                <h3 className="mt-2 text-lg font-semibold">
-                  {opportunity.mode}
-                </h3>
-
-              </div>
-
-              <div>
-
-                <p className="text-sm text-[#8B7355]">
-                  Deadline
-                </p>
-
-                <h3 className="mt-2 text-lg font-semibold">
-                  {opportunity.deadline}
-                </h3>
-
-              </div>
-              <div>
-
-  <p className="text-sm text-[#8B7355]">
-    Career Domain
-  </p>
-
-  <h3 className="mt-2 text-lg font-semibold">
-    {opportunity.careerDomain}
-  </h3>
-
-</div>
-
+            <div className="mt-7 space-y-5">
+              {[
+                ["Opportunity Type", opportunity.type],
+                ["Location", opportunity.location],
+                ["Mode", opportunity.mode],
+                ["Deadline", opportunity.deadlineType === "No Deadline" ? "No deadline" : opportunity.deadline],
+                ["Career Domain", opportunity.careerDomain],
+                ["Experience Level", opportunity.experienceLevel],
+                ["Eligible Region", opportunity.locationRegion],
+                ["Deadline Policy", opportunity.deadlineType],
+                ["Funding / Stipend", opportunity.funding],
+              ].filter(([, value]) => value != null && String(value).trim() !== "").map(([label, value]) => (
+                <div key={label}>
+                  <p className="text-sm text-[#8B7355]">{label}</p>
+                  <h3 className="mt-2 break-words text-base font-semibold text-[#2B1D16]">
+                    {value}
+                  </h3>
+                </div>
+              ))}
             </div>
 
-            <div className="mt-10 rounded-2xl border bg-[#F8F5F0] border-[#E7DDD1]  p-5">
-
-  <p className="text-sm text-[#8B7355]">
-    Applications
-  </p>
-
-  <h3 className="mt-2 text-2xl font-bold">
-  {applicationsCount}
-  </h3>
-
-  <p className="mt-1 text-sm text-[#8B7355]">
-  {applicationsCount === 1
-  ? "Candidate already applied"
-  : "Candidates already applied"}
-  </p>
-
-</div>
+            {applicationsCount >= 0 && (
+              <div className="mt-7 rounded-2xl border border-[#E7DDD1] bg-[#F8F5F0] p-5">
+                <p className="text-sm text-[#8B7355]">Applications</p>
+                <h3 className="mt-2 text-2xl font-bold">{applicationsCount}</h3>
+                <p className="mt-1 text-sm text-[#8B7355]">
+                  {applicationsCount === 1 ? "Candidate applied" : "Candidates applied"}
+                </p>
+              </div>
+            )}
 
             {/* BUTTONS */}
 
-            <div className="mt-12 space-y-4">
+            <div className="mt-7 space-y-3">
 
             {opportunity.applicationLink ? (
 
@@ -751,7 +785,71 @@ export default function OpportunityPage() {
 
           </div>
 
+        
+      {showProfilePopup && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/50 px-4 py-6 backdrop-blur-sm">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="profile-gate-title"
+            className="w-full max-w-md animate-in fade-in zoom-in-95 rounded-3xl border border-blue-100 bg-[#FFFDF9] p-6 shadow-2xl duration-200 sm:p-8"
+          >
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50 text-3xl">
+              💙
+            </div>
+
+            <h2 id="profile-gate-title" className="text-center text-2xl font-bold tracking-tight text-slate-900">
+              Your profile needs a little love ✨
+            </h2>
+
+            <p className="mt-3 text-center text-sm leading-6 text-slate-500">
+              Recruiters want to get to know you! Add a little more about yourself before applying.
+            </p>
+
+            <div className="mt-6 rounded-2xl bg-slate-50 p-4">
+              <div className="mb-2 flex items-center justify-between text-sm">
+                <span className="font-medium text-slate-600">Profile completion</span>
+                <span className="font-bold text-blue-600">{profileCompletion ?? 0}%</span>
+              </div>
+              <div
+                className="h-2.5 overflow-hidden rounded-full bg-slate-200"
+                role="progressbar"
+                aria-valuenow={profileCompletion ?? 0}
+                aria-valuemin={0}
+                aria-valuemax={100}
+              >
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-blue-500 to-sky-400 transition-all duration-500"
+                  style={{ width: `${profileCompletion ?? 0}%` }}
+                />
+              </div>
+              <p className="mt-2 text-xs text-slate-500">
+                You need at least 75% to start applying.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setShowProfilePopup(false)
+                router.push("/profile")
+              }}
+              className="mt-6 w-full rounded-2xl bg-blue-600 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 active:scale-[0.98]"
+            >
+              Complete My Profile ✨
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowProfilePopup(false)}
+              className="mt-3 w-full rounded-2xl px-5 py-3 text-sm font-medium text-slate-500 transition hover:bg-slate-50 hover:text-slate-800"
+            >
+              Maybe later
+            </button>
+          </div>
         </div>
+      )}
+</div>
 
       </section>
 

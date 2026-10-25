@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { collection, getDocs, query, orderBy, limit } from "firebase/firestore"
@@ -73,15 +73,15 @@ const FLAG = (code: string) => `https://flagcdn.com/w20/${code.toLowerCase()}.pn
 
 
 export default function Universities() {
-  const [universities, setUniversities] = useState<any[]>(FALLBACK_UNIVERSITIES)
+  const [universities, setUniversities] = useState<any[]>([])
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const fetch = async () => {
       try {
         const q = query(collection(db, "universities"), orderBy("opportunities", "desc"), limit(10))
-        const snap = await getDocs(q)
-        if (!snap.empty) setUniversities(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
+const snap = await getDocs(q)
+setUniversities(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
       } catch { /* use fallback */ }
     }
     fetch()
@@ -280,7 +280,7 @@ export default function Universities() {
       </div>
 
       {/* ── Featured Universities row ── */}
-      <div className="bg-white px-8 py-8 lg:px-12">
+      <div className="bg-white pl-[30px] pr-[30px] py-8">
         <div className="mb-5 flex items-center justify-between">
           <h3 className="text-[22px] font-bold text-[#1A1A2E]">Featured Universities</h3>
           <Link href="/universities" className="flex items-center gap-1 text-[13px] font-semibold text-[#2563EB] hover:underline">
@@ -294,56 +294,59 @@ export default function Universities() {
             className="flex gap-4 overflow-x-auto pb-2"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            {universities.map((uni) => (
-              <div
-                key={uni.id}
-                className="group min-w-[210px] w-[210px] shrink-0 overflow-hidden rounded-[20px] border border-[#EBEBEB] bg-white transition hover:shadow-md cursor-pointer"
-              >
-                {/* Campus image */}
-                <div className="h-[120px] overflow-hidden bg-gray-100">
-                  <img
-                    src={uni.image || uni.imageUrl}
-                    alt={uni.name}
-                    className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.04]"
-                    onError={(e) => {
-                      e.currentTarget.src = `https://picsum.photos/seed/${uni.id}/400/300`
-                    }}
-                  />
-                </div>
-
-                {/* Info */}
-                <div className="p-3.5">
-                  {/* Logo + name row */}
-                  <div className="flex items-center gap-2 mb-1.5">
-                    {uni.logoUrl ? (
-                      <img
-                        src={uni.logoUrl}
-                        alt={`${uni.name} logo`}
-                        className="h-7 w-7 object-contain flex-shrink-0"
-                        onError={(e) => (e.currentTarget.style.display = "none")}
-                      />
-                    ) : null}
-                    <p className="text-[11.5px] font-bold leading-snug text-[#1A1A2E] line-clamp-2">
-                      {uni.shortName || uni.name}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1.5 mb-3">
-                    {uni.countryCode && (
-                      <img
-                        src={FLAG(uni.countryCode)}
-                        alt={uni.country}
-                        className="h-3 w-[18px] rounded-sm object-cover flex-shrink-0"
-                        onError={(e) => (e.currentTarget.style.display = "none")}
-                      />
-                    )}
-                    <span className="text-[11px] text-[#8A8A8A]">{uni.country}</span>
-                  </div>
-                  <div className="rounded-full bg-[#EEF3FF] py-1.5 text-center text-[11px] font-semibold text-[#2563EB]">
-                    {uni.opportunities || "—"} Opportunities
-                  </div>
-                </div>
-              </div>
-            ))}
+            {universities.length === 0 ? (
+  <div className="w-full rounded-2xl border border-dashed border-[#D8E3F8] bg-[#F8FAFF] px-6 py-12 text-center">
+    <GraduationCap className="mx-auto mb-3 h-9 w-9 text-[#2563EB]" />
+    <h4 className="text-lg font-bold text-[#1A1A2E]">
+      Universities Coming Soon
+    </h4>
+    <p className="mt-2 text-sm text-[#6B7280]">
+      We're preparing university profiles to help you explore opportunities worldwide.
+    </p>
+  </div>
+) : (
+  universities.map((uni) => (
+    <div
+      key={uni.id}
+      className="group min-w-[210px] w-[210px] shrink-0 overflow-hidden rounded-[20px] border border-[#EBEBEB] bg-white transition hover:shadow-md cursor-pointer"
+    >
+      <div className="h-[120px] overflow-hidden bg-gray-100">
+        <img
+          src={uni.image || uni.imageUrl}
+          alt={uni.name}
+          className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.04]"
+        />
+      </div>
+      <div className="p-3.5">
+        <div className="mb-1.5 flex items-center gap-2">
+          {uni.logoUrl ? (
+            <img
+              src={uni.logoUrl}
+              alt={`${uni.name} logo`}
+              className="h-7 w-7 shrink-0 object-contain"
+            />
+          ) : null}
+          <p className="line-clamp-2 text-[11.5px] font-bold leading-snug text-[#1A1A2E]">
+            {uni.shortName || uni.name}
+          </p>
+        </div>
+        <div className="mb-3 flex items-center gap-1.5">
+          {uni.countryCode && (
+            <img
+              src={FLAG(uni.countryCode)}
+              alt={uni.country}
+              className="h-3 w-[18px] shrink-0 rounded-sm object-cover"
+            />
+          )}
+          <span className="text-[11px] text-[#8A8A8A]">{uni.country}</span>
+        </div>
+        <div className="rounded-full bg-[#EEF3FF] py-1.5 text-center text-[11px] font-semibold text-[#2563EB]">
+          {uni.opportunities || "—"} Opportunities
+        </div>
+      </div>
+    </div>
+  ))
+)}
           </div>
 
           {/* Scroll arrow */}

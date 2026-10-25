@@ -1,24 +1,25 @@
+
 "use client"
+
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { useEffect, useState } from "react"
 import { onAuthStateChanged } from "firebase/auth"
 import { doc, getDoc } from "firebase/firestore"
 import { auth, db } from "@/lib/firebase"
 import {
   House, Search, Calendar, Users, Bookmark,
-  FileText, Sparkles, Crown, ArrowRight, Bell,
+  FileText, Sparkles, Crown, ArrowRight,
 } from "lucide-react"
 
 const NAV_ITEMS = [
   { href: "/", icon: House, label: "Home" },
   { href: "/explore", icon: Search, label: "Explore" },
   { href: "/events", icon: Calendar, label: "Events" },
-  { href: "/networking", icon: Users, label: "Network" },
   { href: "/mentorship", icon: Users, label: "Mentorship" },
   { href: "/ai", icon: Sparkles, label: "AI" },
   { href: "/saved", icon: Bookmark, label: "Saved" },
-  { href: "/notifications", icon: Bell, label: "Notifications" },
   { href: "/applications", icon: FileText, label: "Applications" },
 ]
 
@@ -33,8 +34,8 @@ const MOBILE_NAV = [
 export default function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
-  const [fullName, setFullName] = useState("")
-  const [role, setRole] = useState("student")
+  const [, setFullName] = useState("")
+  const [, setRole] = useState("student")
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
@@ -43,6 +44,9 @@ export default function Sidebar() {
         const d = snap.data()
         setFullName(d?.fullName || "")
         setRole(d?.role || "student")
+      } else {
+        setFullName("")
+        setRole("student")
       }
     })
     return () => unsub()
@@ -53,77 +57,106 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* ══════════ DESKTOP SIDEBAR ══════════ */}
-      <aside className="hidden lg:flex fixed left-0 top-0 z-40 h-screen w-[80px] flex-col items-center border-r border-[#EBEBEB] bg-[#F8F8F8] py-0">
-
-        {/* Vertical brand text */}
-        <div className="flex-shrink-0 flex items-center justify-center" style={{ height: "100px" }}>
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex fixed left-0 top-0 z-40 h-screen w-[80px] flex-col items-center border-r border-[#EBEBEB] bg-[#F8F8F8]">
+       
+        {/* Brand */}
+        <div className="flex h-[100px] w-full shrink-0 items-center justify-center pt-24">
           <Link
             href="/"
-            className="-rotate-90 whitespace-nowrap flex items-center gap-[4px]"
-            style={{ fontFamily: "var(--font-lora), Georgia, 'Times New Roman', serif" }}
+            className="flex -rotate-90 items-center justify-center gap-[4px] whitespace-nowrap"
+            style={{
+              fontFamily: "var(--font-lora), Georgia, 'Times New Roman', serif",
+            }}
           >
-            <span className="text-[16px] font-normal leading-none" style={{ color: "#B89A6A" }}>Gonn&apos;a</span>
-            <span className="text-[16px] font-bold leading-none text-[#1A1A2E]">Global</span>
+            <span
+              className="text-[22px] font-normal leading-none"
+              style={{ color: "#2563EB" }}
+            >
+              Gonn&apos;a
+            </span>
+            <span
+              className="text-[22px] font-bold leading-none"
+              style={{ color: "#2B1D16" }}
+            >
+              Global
+            </span>
           </Link>
         </div>
 
-        {/* Nav items — spread evenly filling full height */}
-        <nav className="flex flex-1 flex-col items-center justify-between w-full px-1.5 overflow-hidden py-3">
-          <div className="flex flex-col items-center w-full gap-0">
-          {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
-            const active = isActive(href)
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={`group flex w-full flex-col items-center gap-1 rounded-xl px-1 py-2 transition-all duration-200 ${
-                  active
-                    ? "bg-[#EBF0FF] text-[#2563EB]"
-                    : "text-[#6B6B6B] hover:bg-[#F0F0F0] hover:text-[#2563EB]"
-                }`}
-              >
-                <Icon
-                  className={`h-[20px] w-[20px] transition-colors duration-200 ${
-                    active ? "text-[#2563EB]" : "text-[#6B6B6B] group-hover:text-[#2563EB]"
-                  }`}
-                  strokeWidth={active ? 2.2 : 1.7}
-                />
-                <span
-                  className={`text-[9px] font-medium leading-tight text-center tracking-[0.01em] ${
-                    active ? "text-[#2563EB]" : "text-[#6B6B6B] group-hover:text-[#2563EB]"
+
+        {/* Navigation */}
+        <nav className="flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-3 overflow-y-auto pt-0 pb-3">
+          <div className="-mt-[9px] flex w-full flex-col items-center gap-2">
+            {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
+              const active = isActive(href)
+
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                 className={`group flex w-full flex-col items-center justify-center rounded-xl px-1 py-3 text-center transition-all duration-200 ${
+                    active
+                      ? "bg-[#EBF0FF] text-[#2563EB]"
+                      : "text-[#6B6B6B] hover:bg-[#F0F0F0] hover:text-[#2563EB]"
                   }`}
                 >
-                  {label}
-                </span>
-              </Link>
-            )
-          })}
+                  <Icon
+                    className={`h-5 w-5 shrink-0 ${
+                      active ? "text-[#2563EB]" : "text-[#6B6B6B] group-hover:text-[#2563EB]"
+                    }`}
+                    strokeWidth={active ? 2.2 : 1.7}
+                  />
+            
+                </Link>
+              )
+            })}
           </div>
 
-          {/* Upgrade to Premium — pinned to bottom */}
+          {/* Premium upgrade */}
           <button
+            type="button"
             onClick={() => router.push("/upgrade")}
-            className="group flex w-full flex-col items-center gap-1 rounded-xl bg-[#FEF9EC] border border-[#F5DFA0] px-1 py-2 transition-all duration-200 hover:bg-[#FEF3C7] mb-4"
+            className="mb-4 flex w-[calc(100%-4px)] flex-col items-center justify-center gap-1 rounded-xl border border-[#F5DFA0] bg-[#FEF9EC] px-1 py-2 text-center transition-colors hover:bg-[#FEF3C7]"
           >
-            <Crown className="h-[20px] w-[20px] text-[#B8860B]" strokeWidth={1.7} />
-            <span className="text-[8.5px] font-semibold leading-tight text-center text-[#92400E]">
-              Upgrade<br />Premium
+            <Crown className="h-5 w-5 text-[#B8860B]" strokeWidth={1.7} />
+            <span className="w-full text-[8.5px] font-semibold leading-tight text-center text-[#92400E]">
+              Upgrade to
+              <br />
+              Premium
             </span>
             <ArrowRight className="h-3 w-3 text-[#B8860B]" />
           </button>
-        </nav>
-      </aside>
+       
+      </nav>
 
-      {/* ══════════ MOBILE BOTTOM TAB BAR ══════════ */}
-      <nav className="fixed bottom-0 left-0 z-50 flex w-full items-center justify-around border-t border-[#EBEBEB] bg-white/95 backdrop-blur-md px-2 py-2 lg:hidden">
+      {/* Bottom brand icon */}
+      <Link
+        href="/"
+        className="mb-4 mt-0 flex h-12 w-12 shrink-0 items-center justify-center"
+        aria-label="Gonn'a Global home"
+      >
+        <Image
+          src="/goglobal-icon.png"
+          alt="Gonn'a Global"
+          width={50}
+          height={50}
+          className="h-10 w-10 object-contain"
+        />
+      </Link>
+    </aside>
+
+
+      {/* Mobile bottom navigation */}
+      <nav className="fixed bottom-0 left-0 z-50 flex w-full items-center justify-around border-t border-[#EBEBEB] bg-white/95 px-2 py-2 backdrop-blur-md lg:hidden">
         {MOBILE_NAV.map(({ href, icon: Icon, label }) => {
           const active = isActive(href)
+
           return (
             <Link
               key={href}
               href={href}
-              className={`flex flex-col items-center gap-0.5 min-w-[52px] py-1 rounded-xl transition-all duration-200 ${
+              className={`flex min-w-[52px] flex-col items-center gap-0.5 rounded-xl py-1 transition-all duration-200 ${
                 active ? "text-[#2563EB]" : "text-[#6B6B6B]"
               }`}
             >

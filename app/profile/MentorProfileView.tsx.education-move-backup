@@ -1,0 +1,536 @@
+"use client"
+
+import { useState } from "react"
+import { doc, updateDoc } from "firebase/firestore"
+import { db } from "@/lib/firebase"
+import {
+  MapPin, Mail, Link2, Camera, Share2, ChevronDown,
+  Pencil, Download, ExternalLink, Plus, CheckCircle2,
+  Circle, FileText, Bookmark, CalendarDays, Users,
+  ArrowRight
+} from "lucide-react"
+
+// ── Mentor Profile Sub-Component
+export default function MentorProfileView({ user }: { user: any }) {
+  const [activeTab, setActiveTab] = useState("Overview")
+  const [aboutMe, setAboutMe] = useState(user?.aboutMe || "")
+  const [aboutMeDraft, setAboutMeDraft] = useState(user?.aboutMe || "")
+  const [aboutMeEditing, setAboutMeEditing] = useState(false)
+  const [aboutMeSaving, setAboutMeSaving] = useState(false)
+
+  const mentorshipSuggestions = [
+    "Career Guidance", "Resume Review", "Interview Preparation",
+    "Product Management", "Software Development", "Web Development",
+    "Data Science", "Artificial Intelligence", "Machine Learning",
+    "Cybersecurity", "UI/UX Design", "Entrepreneurship",
+    "Startup Guidance", "Leadership", "Communication Skills",
+    "Higher Education", "Study Abroad Guidance", "Scholarship Guidance",
+    "Research Guidance", "Internship Guidance", "Job Search",
+    "Networking", "Personal Branding", "Portfolio Review",
+    "Industry Insights", "Project Guidance", "Public Speaking"
+  ]
+  const initialMentorshipAreas = Array.isArray(user?.mentorshipAreas)
+    ? user.mentorshipAreas
+    : []
+  const [mentorshipAreas, setMentorshipAreas] = useState<string[]>(initialMentorshipAreas)
+  const [mentorshipDraft, setMentorshipDraft] = useState<string[]>(initialMentorshipAreas)
+  const [mentorshipEditing, setMentorshipEditing] = useState(false)
+  const [mentorshipQuery, setMentorshipQuery] = useState("")
+  const [mentorshipSaving, setMentorshipSaving] = useState(false)
+
+  const addMentorshipArea = (value: string) => {
+    const tag = value.trim()
+    if (!tag || mentorshipDraft.some((item) => item.toLowerCase() === tag.toLowerCase())) return
+    setMentorshipDraft((current) => [...current, tag])
+    setMentorshipQuery("")
+  }
+
+  const initialExperience = Array.isArray(user?.experience) ? user.experience : []
+  const [experiences, setExperiences] = useState<any[]>(initialExperience)
+  const [experienceDraft, setExperienceDraft] = useState<any[]>(initialExperience)
+  const [experienceEditing, setExperienceEditing] = useState(false)
+  const [experienceSaving, setExperienceSaving] = useState(false)
+  const [experienceForm, setExperienceForm] = useState({
+    role: "",
+    company: "",
+    startDate: "",
+    endDate: "",
+    location: "",
+  })
+
+  const saveExperiences = async () => {
+    if (!user?.uid) {
+      alert("Unable to save: user account was not found.")
+      return
+    }
+
+    setExperienceSaving(true)
+    try {
+      await updateDoc(doc(db, "users", user.uid), {
+        experience: experienceDraft,
+      })
+      setExperiences(experienceDraft)
+      setExperienceEditing(false)
+      setExperienceForm({ role: "", company: "", startDate: "", endDate: "", location: "" })
+    } catch (error) {
+      console.error("Failed to save professional experience:", error)
+      alert("Could not save experience. Please try again.")
+    } finally {
+      setExperienceSaving(false)
+    }
+  }
+
+  const saveMentorshipAreas = async () => {
+    if (!user?.uid) {
+      alert("Unable to identify your account. Please log in again.")
+      return
+    }
+    setMentorshipSaving(true)
+    try {
+      await updateDoc(doc(db, "users", user.uid), { mentorshipAreas: mentorshipDraft })
+      setMentorshipAreas(mentorshipDraft)
+      setMentorshipEditing(false)
+      setMentorshipQuery("")
+    } catch (error) {
+      console.error("Failed to save mentorship areas:", error)
+      alert("Could not save mentorship areas. Please try again.")
+    } finally {
+      setMentorshipSaving(false)
+    }
+  }
+
+
+  const saveAboutMe = async () => {
+    if (!user?.uid) {
+      alert("Unable to identify your account. Please log in again.")
+      return
+    }
+    setAboutMeSaving(true)
+    try {
+      const value = aboutMeDraft.trim()
+      await updateDoc(doc(db, "users", user.uid), { aboutMe: value })
+      setAboutMe(value)
+      setAboutMeEditing(false)
+    } catch (error) {
+      console.error("Failed to save About Me:", error)
+      alert("Could not save About Me. Please try again.")
+    } finally {
+      setAboutMeSaving(false)
+    }
+  }
+
+  return (
+    <div>
+      {/* Cover */}
+      <div className="relative h-[200px] overflow-hidden bg-gradient-to-r from-slate-300 to-blue-300">
+        <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1400&q=80" alt="Cover" className="h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-blue-900/20" />
+        <div className="absolute left-1/2 top-8 -translate-x-1/4 text-center">
+          <p className="text-[22px] font-bold text-white drop-shadow" style={{ fontFamily: "Georgia, serif" }}>Empowering</p>
+          <p className="text-[22px] font-bold text-white drop-shadow" style={{ fontFamily: "Georgia, serif" }}>Global Talent</p>
+        </div>
+        <div className="absolute right-16 top-8 text-right text-white drop-shadow">
+          <p className="text-[20px] font-bold" style={{ fontFamily: "Georgia, serif" }}>Mentor</p>
+          <p className="text-[20px] font-bold" style={{ fontFamily: "Georgia, serif" }}>Guide</p>
+          <p className="text-[20px] font-bold" style={{ fontFamily: "Georgia, serif" }}>Support</p>
+          <p className="text-[20px] font-bold" style={{ fontFamily: "Georgia, serif" }}>Grow</p>
+        </div>
+        
+      </div>
+
+      {/* Info row */}
+      <div className="relative bg-white px-6 pb-0 border-b border-[#EBEBEB]">
+        <div className="absolute -top-14 left-6">
+          <div className="relative h-[108px] w-[108px] rounded-full border-4 border-white shadow-lg overflow-hidden bg-gray-200">
+            <img src={user?.photoURL || "https://ui-avatars.com/api/?name=" + encodeURIComponent(user?.fullName || user?.displayName || "Mentor") + "&background=E5E7EB&color=374151"} alt="Profile picture" className="h-full w-full object-cover" />
+            <button className="absolute bottom-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow">
+              <Camera className="h-3.5 w-3.5 text-[#555]" />
+            </button>
+          </div>
+        </div>
+
+        <div className="ml-[130px] flex flex-wrap items-start justify-between gap-4 pb-4 pt-3">
+          <div>
+            <div className="flex w-full items-center gap-2">
+              <h1 className="text-[24px] font-bold text-[#1A1A2E]">{user?.fullName || user?.displayName || "Mentor"}</h1>
+              <span className="text-[#2563EB] shrink-0">
+                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 0l2.4 7.4H20l-6.2 4.5 2.4 7.4L10 15l-6.2 4.3 2.4-7.4L0 7.4h7.6z"/></svg>
+              </span>
+              
+            </div>
+            {[user?.headline, user?.currentRole, user?.company, user?.professionalTitle].filter(value => typeof value === "string" && value.trim()).filter((value, index, all) => all.indexOf(value) === index).length > 0 && (
+              <p className="text-[13.5px] text-[#687995]">
+                {[user?.headline, user?.currentRole, user?.company, user?.professionalTitle].filter(value => typeof value === "string" && value.trim()).filter((value, index, all) => all.indexOf(value) === index).join(" | ")}
+              </p>
+            )}
+            <div className="mt-2 flex flex-wrap items-center gap-4 text-[12.5px] text-[#687995]">
+              {[user?.city, user?.country, user?.location].filter(value => typeof value === "string" && value.trim()).filter((value, index, all) => all.indexOf(value) === index).length > 0 && (
+                <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {[user?.city, user?.country, user?.location].filter(value => typeof value === "string" && value.trim()).filter((value, index, all) => all.indexOf(value) === index).join(", ")}</span>
+              )}
+              <span className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" /> {user?.email || "No email provided"}</span>
+              {(user?.linkedinUrl || user?.linkedin)?.trim() && (
+                <a href={user.linkedinUrl || user.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-[#2563EB]">
+                  <Link2 className="h-3.5 w-3.5" /> LinkedIn
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex gap-6">
+          {["Overview", "Details", "Settings"].map((tab) => (
+            <button key={tab} onClick={() => setActiveTab(tab)} className={`pb-3 text-[14px] font-medium transition ${activeTab === tab ? "border-b-2 border-[#2563EB] text-[#2563EB]" : "text-[#687995] hover:text-[#1A1A2E]"}`}>
+              {tab}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="grid grid-cols-1 gap-5 px-6 py-6 lg:grid-cols-[240px_1fr_280px]">
+        {/* Left */}
+        <div>
+          <div className="rounded-2xl border border-[#EBEBEB] bg-white p-5 shadow-sm">
+            <h3 className="text-[15px] font-bold text-[#1A1A2E]">Profile Completion</h3>
+            <div className="my-5 flex justify-center">
+              <div className="relative h-[110px] w-[110px]">
+                <svg viewBox="0 0 110 110" className="h-full w-full -rotate-90">
+                  <circle cx="55" cy="55" r="48" fill="none" stroke="#F0F0F0" strokeWidth="10"/>
+                  <circle cx="55" cy="55" r="48" fill="none" stroke="#2563EB" strokeWidth="10" strokeDasharray="254.5 301.6" strokeLinecap="round"/>
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-[22px] font-bold text-[#1A1A2E]">85%</span>
+                </div>
+              </div>
+            </div>
+            <p className="text-center text-[12px] text-[#687995] mb-4">5/6 sections completed</p>
+            <div className="space-y-2.5">
+              {["Basic Information", "Professional Details", "Areas of Mentorship (4/4)", "Languages (2/2)", "Add Experience", "Add Website / Portfolio"].map((item, i) => (
+                <div key={item} className="flex items-center gap-2 text-[13px]">
+                  {i < 5 ? <CheckCircle2 className="h-4 w-4 text-[#2563EB] shrink-0" /> : <Circle className="h-4 w-4 text-[#D0D0D0] shrink-0" />}
+                  <span className={i < 5 ? "text-[#1A1A2E]" : "text-[#ABABAB]"}>{item}</span>
+                </div>
+              ))}
+            </div>
+            <button className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-[#2563EB] py-2.5 text-[13px] font-semibold text-white hover:bg-[#1D4ED8] transition">
+              Complete Your Profile <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Middle */}
+        <div className="space-y-5">
+          <div className="rounded-2xl border border-[#EBEBEB] bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-[15px] font-bold text-[#1A1A2E]">About Me</h3>
+              {!aboutMeEditing ? (
+                <button type="button" aria-label="Edit About Me" onClick={() => { setAboutMeDraft(aboutMe); setAboutMeEditing(true); }} className="rounded p-1 hover:bg-gray-100">
+                  <Pencil className="h-4 w-4 text-[#ABABAB]" />
+                </button>
+              ) : (
+                <div className="flex gap-3 text-xs font-semibold">
+                  <button type="button" onClick={() => { setAboutMeDraft(aboutMe); setAboutMeEditing(false); }} className="text-gray-500">Cancel</button>
+                  <button type="button" disabled={aboutMeSaving} onClick={saveAboutMe} className="text-[#2563EB] disabled:opacity-50">{aboutMeSaving ? "Saving..." : "Save"}</button>
+                </div>
+              )}
+            </div>
+            {aboutMeEditing ? (
+              <textarea value={aboutMeDraft} onChange={(e) => setAboutMeDraft(e.target.value)} rows={5} maxLength={2000} placeholder="Write about yourself and your mentoring experience..." className="w-full rounded-lg border border-gray-200 p-3 text-[13.5px] leading-[1.7] text-[#687995] outline-none focus:border-blue-400" />
+            ) : (
+              <p className="whitespace-pre-wrap text-[13.5px] leading-[1.7] text-[#687995]">
+                {aboutMe || "Tell students about yourself, your experience, and how you can help them."}
+              </p>
+            )}
+
+          </div>
+
+          <div className="rounded-2xl border border-[#EBEBEB] bg-white p-5 shadow-sm">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-[15px] font-bold text-[#1A1A2E]">Areas of Mentorship</h3>
+              <div className="flex items-center gap-3">
+                {mentorshipEditing ? (
+                  <>
+                    <button type="button" onClick={() => { setMentorshipDraft(mentorshipAreas); setMentorshipEditing(false); setMentorshipQuery(""); }} className="text-xs font-semibold text-gray-500">Cancel</button>
+                    <button type="button" disabled={mentorshipSaving} onClick={saveMentorshipAreas} className="text-xs font-semibold text-[#2563EB] disabled:opacity-50">{mentorshipSaving ? "Saving..." : "Save"}</button>
+                  </>
+                ) : (
+                  <button type="button" onClick={() => { setMentorshipDraft(mentorshipAreas); setMentorshipEditing(true); }} className="flex items-center gap-1 text-[12px] font-semibold text-[#2563EB]"><Pencil className="h-3.5 w-3.5" /> Edit</button>
+                )}
+              </div>
+            </div>
+            {mentorshipEditing && (
+              <div className="relative mb-4">
+                <input
+                  value={mentorshipQuery}
+                  onChange={(event) => setMentorshipQuery(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault()
+                      addMentorshipArea(mentorshipQuery)
+                    }
+                    if (event.key === "Escape") setMentorshipQuery("")
+                  }}
+                  placeholder="Search areas or type your own..."
+                  className="w-full rounded-xl border border-[#D7DCE5] px-3 py-2.5 text-sm text-[#1A1A2E] placeholder:text-[#4B5563] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100"
+                />
+                {mentorshipQuery.trim() && (
+                  <div className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-xl border border-[#E0E0E0] bg-white p-1 shadow-lg">
+                    {mentorshipSuggestions.filter((item) =>
+                      item.toLowerCase().includes(mentorshipQuery.trim().toLowerCase()) &&
+                      !mentorshipDraft.some((existing) => existing.toLowerCase() === item.toLowerCase())
+                    ).slice(0, 8).map((item) => (
+                      <button key={item} type="button" onClick={() => addMentorshipArea(item)} className="block w-full rounded-lg px-3 py-2 text-left text-sm text-[#1A1A2E] hover:bg-[#EEF3FF]">{item}</button>
+                    ))}
+                    {!mentorshipDraft.some((existing) => existing.toLowerCase() === mentorshipQuery.trim().toLowerCase()) && (
+                      <button type="button" onClick={() => addMentorshipArea(mentorshipQuery)} className="block w-full rounded-lg border-t border-[#F0F0F0] px-3 py-2 text-left text-sm font-medium text-[#2563EB] hover:bg-[#EEF3FF]">+ Add "{mentorshipQuery.trim()}" as a custom area</button>
+                    )}
+                  </div>
+                )}
+                <p className="mt-2 text-xs text-gray-500">Type to search suggestions or add a custom area. Press Enter to add.</p>
+              </div>
+            )}
+            <div className="flex flex-wrap gap-2">
+              {(mentorshipEditing ? mentorshipDraft : mentorshipAreas).map((tag) => (
+                <span key={tag} className="flex items-center gap-1.5 rounded-full border border-[#E0E0E0] bg-[#F7F7F7] px-3 py-1 text-[12.5px] text-[#555]">
+                  {tag}
+                  {mentorshipEditing && <button type="button" aria-label={"Remove " + tag} onClick={() => setMentorshipDraft((current) => current.filter((item) => item !== tag))} className="ml-1 text-[#ABABAB] hover:text-red-500">×</button>}
+                </span>
+              ))}
+              {(mentorshipEditing ? mentorshipDraft : mentorshipAreas).length === 0 && <p className="text-sm text-gray-500">No mentorship areas added yet.</p>}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-[#EBEBEB] bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[15px] font-bold text-[#1A1A2E]">Professional Experience</h3>
+              {!experienceEditing ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setExperienceDraft(experiences.map((item) => ({ ...item })))
+                    setExperienceEditing(true)
+                  }}
+                  className="flex items-center gap-1 text-[12px] font-semibold text-[#2563EB]"
+                >
+                  <Pencil className="h-4 w-4" /> Edit
+                </button>
+              ) : (
+                <div className="flex gap-3 text-xs font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setExperienceDraft(experiences.map((item) => ({ ...item })))
+                      setExperienceForm({ role: "", company: "", startDate: "", endDate: "", location: "" })
+                      setExperienceEditing(false)
+                    }}
+                    className="text-gray-500"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    disabled={experienceSaving}
+                    onClick={saveExperiences}
+                    className="text-[#2563EB] disabled:opacity-50"
+                  >
+                    {experienceSaving ? "Saving..." : "Save"}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {experienceEditing && (
+              <form
+                className="mb-5 space-y-3 rounded-xl border border-gray-200 p-3"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  if (!experienceForm.role.trim() || !experienceForm.company.trim()) {
+                    alert("Please enter both job title and company.")
+                    return
+                  }
+                  setExperienceDraft((current) => [
+                    ...current,
+                    {
+                      id: `${Date.now()}`,
+                      role: experienceForm.role.trim(),
+                      company: experienceForm.company.trim(),
+                      startDate: experienceForm.startDate,
+                      endDate: experienceForm.endDate,
+                      period: [experienceForm.startDate, experienceForm.endDate].filter(Boolean).join(" – "),
+                      location: experienceForm.location.trim(),
+                    },
+                  ])
+                  setExperienceForm({ role: "", company: "", startDate: "", endDate: "", location: "" })
+                }}
+              >
+                <p className="text-sm font-semibold text-[#1A1A2E]">Add experience</p>
+                <input
+                  required
+                  value={experienceForm.role}
+                  onChange={(e) => setExperienceForm({ ...experienceForm, role: e.target.value })}
+                  placeholder="Job title (e.g. Software Engineer)"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-[#1A1A2E] placeholder:text-gray-500 outline-none focus:border-blue-500"
+                />
+                <input
+                  required
+                  value={experienceForm.company}
+                  onChange={(e) => setExperienceForm({ ...experienceForm, company: e.target.value })}
+                  placeholder="Company / organization"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-[#1A1A2E] placeholder:text-gray-500 outline-none focus:border-blue-500"
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    value={experienceForm.startDate}
+                    onChange={(e) => setExperienceForm({ ...experienceForm, startDate: e.target.value })}
+                    placeholder="Start date (e.g. Jan 2023)"
+                    className="min-w-0 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-[#1A1A2E] placeholder:text-gray-500 outline-none focus:border-blue-500"
+                  />
+                  <input
+                    value={experienceForm.endDate}
+                    onChange={(e) => setExperienceForm({ ...experienceForm, endDate: e.target.value })}
+                    placeholder="End date or Present"
+                    className="min-w-0 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-[#1A1A2E] placeholder:text-gray-500 outline-none focus:border-blue-500"
+                  />
+                </div>
+                <input
+                  value={experienceForm.location}
+                  onChange={(e) => setExperienceForm({ ...experienceForm, location: e.target.value })}
+                  placeholder="Location (optional)"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-[#1A1A2E] placeholder:text-gray-500 outline-none focus:border-blue-500"
+                />
+                <button type="submit" className="flex items-center gap-1 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-semibold text-white">
+                  <Plus className="h-4 w-4" /> Add Experience
+                </button>
+              </form>
+            )}
+
+            {(experienceEditing ? experienceDraft : experiences).length > 0 ? (
+              (experienceEditing ? experienceDraft : experiences).map((item: any, index: number) => (
+                <div key={item.id || `${item.company || "experience"}-${index}`} className="mb-4 flex items-start gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[#E0E0E0] text-xl">💼</div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[14px] font-bold text-[#1A1A2E]">{item.role || item.title || "Role not added"}</p>
+                    <p className="text-[13px] text-[#687995]">{item.company || item.organization || "Organization not added"}</p>
+                    {([item.period, item.startDate, item.endDate, item.location].some((value: unknown) => typeof value === "string" && value.trim())) && (
+                      <p className="text-[12px] text-[#687995]">
+                        {[item.period, item.startDate, item.endDate, item.location].filter((value: unknown) => typeof value === "string" && value.trim()).join(" · ")}
+                      </p>
+                    )}
+                  </div>
+                  {experienceEditing && (
+                    <button
+                      type="button"
+                      aria-label={`Remove ${item.role || item.title || "experience"}`}
+                      onClick={() => setExperienceDraft((current) => current.filter((_, itemIndex) => itemIndex !== index))}
+                      className="text-lg text-gray-400 hover:text-red-600"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-[#687995]">
+                No professional experience added yet. Add your experience to help students understand your background.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Right */}
+        <div className="space-y-5">
+          <div className="rounded-2xl border border-[#EBEBEB] bg-white p-5 shadow-sm">
+            <h3 className="text-[15px] font-bold text-[#1A1A2E] mb-4">Quick Actions</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { icon: Pencil, label: "Edit Profile", primary: true },
+                { icon: Share2, label: "Share Profile" },
+                { icon: ExternalLink, label: "View Public Profile" },
+                { icon: Download, label: "Download Resume" },
+              ].map(({ icon: Icon, label, primary }) => (
+                <button key={label} className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-[13px] font-medium transition ${primary ? "bg-[#EEF3FF] text-[#2563EB]" : "border border-[#E0E0E0] text-[#555] hover:border-[#2563EB] hover:text-[#2563EB]"}`}>
+                  <Icon className="h-4 w-4" /> {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-[#EBEBEB] bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[15px] font-bold text-[#1A1A2E]">Languages Known</h3>
+              <button className="flex items-center gap-1 text-[12px] font-semibold text-[#2563EB]"><Plus className="h-3.5 w-3.5"/>Add Language</button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {[{flag:"🇬🇧",lang:"English",level:"Native"},{flag:"🇮🇳",lang:"Hindi",level:"Native"},{flag:"🇪🇸",lang:"Spanish",level:"Intermediate"},{flag:"🇫🇷",lang:"French",level:"Beginner"}].map(({flag,lang,level})=>(
+                <div key={lang} className="flex items-center gap-2">
+                  <span className="text-[20px]">{flag}</span>
+                  <div><p className="text-[13px] font-semibold text-[#1A1A2E]">{lang}</p><p className="text-[11px] text-[#ABABAB]">{level}</p></div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-[#EBEBEB] bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[15px] font-bold text-[#1A1A2E]">Recent Activity</h3>
+              <button className="text-[12px] font-semibold text-[#2563EB]">View All →</button>
+            </div>
+            <div className="space-y-4">
+              {[
+                {icon:Users,color:"#DBEAFE",ic:"#2563EB",title:"Mentored a student",sub:"Career guidance session",time:"2 days ago"},
+                {icon:FileText,color:"#D1FAE5",ic:"#059669",title:"Published a resource",sub:"Resume Building Guide",time:"4 days ago"},
+                {icon:Users,color:"#EDE9FE",ic:"#7C3AED",title:"Joined Community",sub:"Product Management",time:"1 week ago"},
+                {icon:FileText,color:"#FEF3C7",ic:"#D97706",title:"Updated Profile",sub:"Added new mentorship areas",time:"1 week ago"},
+              ].map(({icon:Icon,color,ic,title,sub,time})=>(
+                <div key={title} className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" style={{backgroundColor:color}}>
+                    <Icon className="h-4 w-4" style={{color:ic}}/>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-semibold text-[#1A1A2E] line-clamp-1">{title}</p>
+                    <p className="text-[12px] text-[#687995]">{sub}</p>
+                  </div>
+                  <span className="text-[11px] text-[#ABABAB] shrink-0">{time}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-[#EBEBEB] bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[15px] font-bold text-[#1A1A2E]">Education</h3>
+              <button><Pencil className="h-4 w-4 text-[#ABABAB]"/></button>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#1A1A2E] text-white text-[11px] font-bold">IIT</div>
+              <div>
+                <p className="text-[14px] font-bold text-[#1A1A2E]">IIT Bombay</p>
+                <p className="text-[13px] text-[#687995]">B.Tech in Computer Science</p>
+                <p className="text-[12px] text-[#ABABAB]">2015 – 2019 | Mumbai, India</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-[#EBEBEB] bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-[15px] font-bold text-[#1A1A2E]">My Resume</h3>
+              <button><Pencil className="h-4 w-4 text-[#ABABAB]"/></button>
+            </div>
+            <div className="flex items-center gap-3 rounded-xl border border-[#E0E0E0] p-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#DBEAFE]">
+                <FileText className="h-4 w-4 text-[#2563EB]"/>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-semibold text-[#1A1A2E]">Rahul_Mehta_Resume.pdf</p>
+                <p className="text-[11px] text-[#ABABAB]">Updated on 15 Aug 2026</p>
+              </div>
+            </div>
+            <button className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-[#E0E0E0] py-2.5 text-[13px] font-semibold text-[#555] hover:border-[#2563EB] hover:text-[#2563EB] transition">
+              <Download className="h-4 w-4"/> Update Resume
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

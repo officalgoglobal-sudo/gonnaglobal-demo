@@ -30,14 +30,7 @@ export default function AboutPage() {
                 <p className="mt-4 max-w-md text-[14px] leading-relaxed text-gray-600">
                   Gonn&apos;a Global is a platform built by students, for students — to make global opportunities more inclusive, and more impactful.
                 </p>
-                <div className="mt-6 flex items-center gap-3">
-                  <Link href="/explore" className="flex items-center gap-2 rounded-[10px] bg-[#0066FF] px-5 py-2.5 text-[13px] font-medium text-white transition hover:bg-[#0055e6]">
-                    Our Mission <ArrowRight className="h-4 w-4" />
-                  </Link>
-                  <Link href="/signup" className="rounded-[10px] border border-gray-200 px-5 py-2.5 text-[13px] font-medium text-gray-700 transition hover:border-gray-300 hover:bg-gray-50">
-                    Join the Movement
-                  </Link>
-                </div>
+
               </div>
               {/* Right — hero image */}
               <div className="relative h-[260px] overflow-hidden lg:h-auto">
@@ -127,57 +120,21 @@ export default function AboutPage() {
                 <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${journeyOpen ? "rotate-180" : ""}`} />
               </button>
 
-              {/* ── EXPANDED JOURNEY TIMELINE ── */}
               <div
                 className={`overflow-hidden transition-all duration-500 ease-in-out ${
                   journeyOpen ? "max-h-[600px] opacity-100 mt-5" : "max-h-0 opacity-0 mt-0"
                 }`}
               >
-                <div className="border-t border-gray-100 pt-5">
-                  {/* Section heading */}
-                  <p className="text-[10.5px] font-semibold uppercase tracking-[0.28em] text-[#0066FF]">Key Milestones</p>
-                  <h3 className="mt-1 text-[17px] font-bold text-gray-900" style={{ fontFamily: "Georgia, serif" }}>
-                    How We Got Here
-                  </h3>
-
-                  {/* Vertical timeline */}
-                  <div className="relative mt-5">
-                    {/* Vertical line */}
-                    <div className="absolute left-[9px] top-1 bottom-1 w-[2px] rounded-full bg-gradient-to-b from-[#0066FF] via-blue-200 to-transparent" />
-
-                    <div className="flex flex-col gap-6 pl-8">
-                      {[
-                        { year: "2023", title: "The Idea",          body: "A small team with a big dream to make global opportunities accessible to every student, everywhere." },
-                        { year: "2024", title: "Platform Launch",    body: "Launched Gonn'a Global with scholarships, internships and events — reaching thousands within weeks." },
-                        { year: "2024", title: "Growing Community",  body: "Crossed 100K+ students across 50+ countries and built a thriving global network." },
-                        { year: "2025", title: "Stronger Together",  body: "Partnered with leading universities and organisations worldwide to bring more quality opportunities." },
-                        { year: "2025+", title: "A Global Impact",   body: "Continuing to expand, empower and create a more equal world for students from all backgrounds." },
-                      ].map(({ year, title, body }, i) => (
-                        <div key={i} className="relative">
-                          {/* Dot */}
-                          <div className="absolute -left-8 top-1 h-4 w-4 rounded-full border-2 border-[#0066FF] bg-white shadow-sm">
-                            <div className="absolute inset-[3px] rounded-full bg-[#0066FF]" />
-                          </div>
-
-                          {/* HEADING LEVEL — year pill */}
-                          <span
-                            className="inline-block rounded-md bg-[#0066FF]/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#0066FF]"
-                            style={{ fontFamily: "Georgia, serif" }}
-                          >
-                            {year}
-                          </span>
-
-                          {/* SUBHEADING — milestone title */}
-                          <p className="mt-1 text-[14px] font-semibold text-gray-900">{title}</p>
-
-                          {/* CONTENT — description */}
-                          <p className="mt-0.5 text-[12.5px] leading-[1.7] text-gray-500">{body}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                <div className="border-t border-gray-100 pt-5 space-y-3">
+                  <p className="text-[13px] leading-[1.75] text-gray-600">
+                    At Gonn&apos;a Global, we see opportunity as more than just a chance to achieve something — it is a way to discover your potential, challenge yourself and shape your future. Whether it is participating in an international competition, connecting with people from different backgrounds, pursuing research, or gaining experience in a new field, every opportunity can open the door to something bigger. Our goal is to make these possibilities easier to discover and help students take the next step towards their ambitions.
+                  </p>
+                  <p className="text-[13px] leading-[1.75] text-gray-600">
+                    We are driven by a simple belief: talent and ambition exist everywhere, and access to opportunities should not be limited by where someone comes from. As we continue to grow, Gonn&apos;a Global aims to bring students, organizations and opportunities closer together through a more accessible and connected global ecosystem. We want to empower the next generation to think bigger, explore further and turn their ambitions into meaningful experiences — because your location should never define the limits of your potential.
+                  </p>
                 </div>
               </div>
+
             </div>
 
             {/* Stats */}
@@ -209,11 +166,11 @@ export default function AboutPage() {
               <div className="absolute left-0 right-0 top-3 h-[2px] bg-gray-200" />
               <div className="grid grid-cols-5 gap-4">
                 {[
-                  { year: "2023", title: "The Idea", body: "A small team with a big dream to make global opportunities accessible." },
-                  { year: "2024", title: "Platform Launch", body: "Launched Gonn'a Global with scholarships, internships and events." },
-                  { year: "2024", title: "Growing Community", body: "Reached 100K+ students across 50+ countries." },
-                  { year: "2025", title: "Stronger Together", body: "Partnered with leading universities and organizations worldwide." },
-                  { year: "2025+", title: "A Global Impact", body: "Continuing to expand, empower and create a more equal world for all students." },
+                  { year: "2026 (Early)", title: "The Idea", body: "A small team with a big dream to make global opportunities more accessible." },
+                  { year: "2026 (June 24th)", title: "Platform Launch", body: "Launched Gonn'a Global with opportunities across scholarships, internships, events and more." },
+                  { year: "2026", title: "Growing Community", body: "Expanded our reach and began connecting students with opportunities beyond their local communities." },
+                  { year: "2026+", title: "Stronger Together", body: "Began building relationships with universities, organizations and communities to expand access to opportunities." },
+                  { year: "2026+", title: "A Global Impact", body: "Continuing to expand, empower and create a more connected world where students can compete beyond borders." },
                 ].map(({ year, title, body }, i) => (
                   <div key={i} className="relative pt-6">
                     {/* Dot */}
@@ -229,23 +186,8 @@ export default function AboutPage() {
             </div>
           </div>
 
-          {/* ── BE PART OF SOMETHING BIGGER ── */}
-          <div className="mt-5 flex justify-end">
-            <div className="relative w-full max-w-[340px] overflow-hidden rounded-[16px] shadow-sm" style={{ minHeight: "160px" }}>
-              <Image src="/login-bg.jpg" alt="Join us" fill className="object-cover object-center" />
-              <div className="absolute inset-0 bg-black/55" />
-              <div className="relative z-10 p-6 text-white">
-                <p className="text-[18px] font-black leading-tight">Be Part of<br />Something Bigger.</p>
-                <p className="mt-1 text-[11px] text-white/80">Join a global community that believes in people, possibilities and progress.</p>
-                <Link href="/signup" className="mt-3 inline-flex items-center gap-1.5 rounded-[8px] bg-white px-4 py-2 text-[12px] font-semibold text-gray-900 transition hover:bg-gray-100">
-                  Get Involved <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            </div>
-          </div>
-
         </section>
-        <div className="lg:ml-0">
+        <div className="-mx-5 sm:-mx-8 lg:-mx-10">
           <Footer />
         </div>
       </div>

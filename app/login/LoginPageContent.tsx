@@ -4,7 +4,14 @@
 import Link from "next/link"
 import { Suspense, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { signInWithEmailAndPassword, sendPasswordResetEmail, signInWithPopup } from "firebase/auth"
+import {
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  signInWithPopup,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
+} from "firebase/auth"
 import { doc, getDoc } from "firebase/firestore"
 import { auth, db, googleProvider } from "@/lib/firebase"
 import { GraduationCap, Users, Mail, Lock, EyeOff, Eye, ArrowRight, Building2 } from "lucide-react"
@@ -19,6 +26,7 @@ function LoginPageContent() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [showPassword, setShowPassword] = useState(false)
+const [rememberMe, setRememberMe] = useState(true)
   const [activeRole, setActiveRole] = useState("Student")
 
   const roleConfig = {
@@ -32,42 +40,144 @@ function LoginPageContent() {
     if (!email || !password) { setError("Please enter all details"); return }
     try {
       setError(""); setLoading(true)
-      const userCredential = await signInWithEmailAndPassword(auth, email, password)
+      await setPersistence(
+  auth,
+  rememberMe ? browserLocalPersistence : browserSessionPersistence
+)
+
+const userCredential = await signInWithEmailAndPassword(auth, email, password)
       const user = userCredential.user
       await user.reload()
       if (!user.emailVerified) { router.push("/verify-email"); return }
-      await getDoc(doc(db, "users", user.uid))
+      const userDoc = await getDoc(doc(db, "users", user.uid))
+if (!userDoc.exists()) {
+  await auth.signOut()
+  setError("Account profile not found. Please contact support.")
+  return
+}
+const userData = userDoc.data()
+
+const expectedRole = {
+  Student: "user",
+  Mentor: "mentor",
+  Institution: "institution",
+}[activeRole]
+
+const storedRole = userData.activeRole || userData.role
+
+const roleMatches =
+  storedRole === expectedRole ||
+  (activeRole === "Institution" && storedRole === "recruiter")
+
+if (!roleMatches) {
+  await auth.signOut()
+  setError(
+    `This account is registered as ${storedRole === "user" ? "Student" : storedRole === "mentor" ? "Mentor" : storedRole === "institution" || storedRole === "recruiter" ? "Institution" : storedRole}. Please select the correct account type.`
+  )
+  return
+}
+ 
+
       router.push(redirect)
     } catch { setError("Invalid email or password") }
     finally { setLoading(false) }
   }
 
-  const handleGoogleLogin = async () => {
-    try {
-      const result = await signInWithPopup(auth, googleProvider)
-      const user = result.user
-      const userDoc = await getDoc(doc(db, "users", user.uid))
-      if (!userDoc.exists()) { setError("No account found. Please sign up first."); return }
-      router.push(redirect)
-    } catch { setError("Unable to login with Google") }
-  }
+ 
+const handleGoogleLogin = async () => {
+  try {
+    setError("")
+    setLoading(true)
 
-  const cfg = roleConfig[activeRole as keyof typeof roleConfig]
+    await auth.signOut()
+
+    await setPersistence(
+  auth,
+  rememberMe ? browserLocalPersistence : browserSessionPersistence
+)
+
+const result = await signInWithPopup(auth, googleProvider)
+    const user = result.user
+    await user.reload()
+    if (!user.emailVerified) {
+      router.replace("/verify-email")
+      return
+    }
+
+      
+const userDoc = await getDoc(doc(db, "users", user.uid))
+
+if (!userDoc.exists()) {
+  await auth.signOut()
+  setError("No account found. Please sign up first.")
+  return
+}
+
+const userData = userDoc.data()
+
+const expectedRole = {
+  Student: "user",
+  Mentor: "mentor",
+ Institution: "institution",
+}[activeRole]
+
+
+const storedRole = userData.activeRole || userData.role
+
+const roleMatches =
+  storedRole === expectedRole ||
+  (activeRole === "Institution" && storedRole === "recruiter")
+
+if (!roleMatches) {
+  await auth.signOut()
+
+  const registeredRole =
+    storedRole === "user" ? "Student" :
+    storedRole === "mentor" ? "Mentor" :
+    storedRole === "institution" || storedRole === "recruiter" ? "Institution" :
+    "an unknown role"
+
+  setError(
+    `This account is registered as ${registeredRole}. Please select the correct account type.`
+  )
+  return
+}
+
+
+router.push(redirect)
+
+ } catch (error) {
+  console.error("Google login failed:", error)
+  await auth.signOut()
+  setError("Unable to verify your account. Check your Firestore permissions and try again.")
+
+} finally {
+  setLoading(false)
+}
+}
+
+const cfg = roleConfig[activeRole as keyof typeof roleConfig]
 
   return (
     <main className="flex h-screen w-full overflow-hidden bg-white font-sans text-gray-900">
 
-      {/* LEFT PANEL */}
-      <section
-        className="hidden w-1/2 flex-shrink-0 h-screen overflow-hidden lg:block"
-        style={{
-          backgroundImage: "url('/auth-bg.png')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          backgroundColor: "#e8f4fc",
-        }}
-      />
+         {/* LEFT PANEL — fixed height, no scroll */}
+     
+<section
+  className="hidden w-[41%] flex-shrink-0 h-screen overflow-hidden lg:block"
+  
+
+style={{
+  backgroundImage: "url('/auth-bg.png')",
+  backgroundSize: "105% 105%",
+  backgroundPosition: "center",
+  backgroundRepeat: "no-repeat",
+  backgroundColor: "#e8f4fc",
+}}
+
+
+/>
+
 
       {/* RIGHT PANEL */}
       <section className="flex h-screen w-full flex-col overflow-hidden p-5 sm:p-6 lg:w-1/2">
@@ -137,7 +247,12 @@ function LoginPageContent() {
             {/* Remember + Forgot */}
             <div className="flex items-center justify-between">
               <label className="flex cursor-pointer items-center gap-2">
-                <input type="checkbox" className="h-3 w-3 rounded border-gray-300 accent-[#0066FF]" defaultChecked />
+                <input
+  type="checkbox"
+checked={Boolean(rememberMe)}
+  onChange={(e) => setRememberMe(e.target.checked)}
+  className="h-3 w-3 rounded border-gray-300 accent-[#0066FF]"
+/>
                 <span className="text-[11px] font-medium text-gray-700">Remember me</span>
               </label>
               <Link href="/forgot-password" className="text-[11px] font-medium text-[#0066FF] hover:underline">
@@ -162,7 +277,7 @@ function LoginPageContent() {
           </div>
 
           {/* Google */}
-          <button type="button" onClick={handleGoogleLogin}
+          <button type="button" onClick={handleGoogleLogin} disabled={loading}
             className="flex w-full items-center justify-center gap-2 rounded-[8px] border border-gray-200 py-2.5 text-[12px] font-medium text-gray-700 transition hover:bg-gray-50">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="h-4 w-4 shrink-0">
               <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12S17.4 12 24 12c3 0 5.7 1.1 7.8 3l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z" />

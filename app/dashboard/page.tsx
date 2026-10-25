@@ -53,6 +53,12 @@ import { signOut } from "firebase/auth"
       
             }
       
+            await user.reload()
+            if (!user.emailVerified) {
+              router.replace("/verify-email")
+              return
+            }
+
             const userDoc = await getDoc(
               doc(db, "users", user.uid)
             )

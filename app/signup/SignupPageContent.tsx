@@ -55,7 +55,11 @@ function SignupPageContent() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
-  const roleMap: Record<string, string> = { Student: "user", Mentor: "mentor", Institution: "recruiter" }
+  const roleMap: Record<string, string> = {
+  Student: "user",
+  Mentor: "mentor",
+  Institution: "institution"
+}
 
   const toggleInterest = (interest: string) => {
     setSelectedInterests(prev =>
@@ -66,7 +70,27 @@ function SignupPageContent() {
   }
 
   const handleSignup = async () => {
-    if (!fullName || !email || !password || !country) { setError("Please fill in all required fields"); return }
+    
+if (!fullName.trim() || !email.trim() || !password || !country) {
+  setError("Please fill in all required fields")
+  return
+}
+
+if (activeRole === "Student" && !educationLevel) {
+  setError("Please select your current education level")
+  return
+}
+
+if (activeRole === "Mentor" && (!expertise || !experience)) {
+  setError("Please select your field of expertise and years of experience")
+  return
+}
+
+if (activeRole === "Institution" && !institutionType) {
+  setError("Please select your institution type")
+  return
+}
+
     if (password !== confirmPassword) { setError("Passwords do not match"); return }
     if (!agreeTerms) { setError("Please agree to the Terms & Conditions"); return }
     try {
@@ -77,7 +101,11 @@ function SignupPageContent() {
       await sendEmailVerification(user)
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid, fullName, email, phone, country, role,
-        roles: role === "recruiter" ? ["user","recruiter"] : role === "mentor" ? ["user","mentor"] : ["user"],
+        roles: role === "institution"
+  ? ["user", "institution"]
+  : role === "mentor"
+    ? ["user", "mentor"]
+    : ["user"],
         activeRole: role, onboardingCompleted: false, newsletter: agreeNewsletter, createdAt: serverTimestamp(),
         // Role-specific fields
         ...(activeRole === "Student" && { educationLevel, interests: selectedInterests }),
@@ -96,24 +124,61 @@ function SignupPageContent() {
     } finally { setLoading(false) }
   }
 
-  const handleGoogleSignup = async () => {
-    try {
-      const role = roleMap[activeRole]
-      const result = await signInWithPopup(auth, googleProvider)
-      const user = result.user
-      const userRef = doc(db, "users", user.uid)
-      const existingUser = await getDoc(userRef)
-      if (!existingUser.exists()) {
-        await setDoc(userRef, {
-          uid: user.uid, fullName: user.displayName || "", email: user.email || "",
-          country: "", role,
-          roles: role === "recruiter" ? ["user","recruiter"] : role === "mentor" ? ["user","mentor"] : ["user"],
-          activeRole: role, onboardingCompleted: false, createdAt: serverTimestamp(),
-        }, { merge: true })
-        router.push(`/onboarding/interests?redirect=${encodeURIComponent(redirect)}`)
-      } else { router.push(redirect) }
-    } catch (err) { console.error(err); setError("Unable to sign up with Google") }
+  
+const handleGoogleSignup = async () => {
+  try {
+    setError("")
+    setLoading(true)
+
+    const role = roleMap[activeRole]
+    const result = await signInWithPopup(auth, googleProvider)
+    const user = result.user
+    const userRef = doc(db, "users", user.uid)
+    const existingUser = await getDoc(userRef)
+
+    if (existingUser.exists()) {
+      const userData = existingUser.data()
+      const storedRole = userData.activeRole || userData.role
+      const roleMatches =
+        storedRole === role ||
+        (role === "institution" && storedRole === "recruiter")
+
+      if (!roleMatches) {
+        await auth.signOut()
+        setError(
+          `This account is not registered as ${activeRole}. Please select the correct account type.`
+        )
+        return
+      }
+
+      router.push(redirect)
+      return
+    }
+
+    await setDoc(userRef, {
+      uid: user.uid,
+      fullName: user.displayName || "",
+      email: user.email || "",
+      country: "",
+      role,
+      roles: role === "institution"
+        ? ["user", "recruiter"]
+        : role === "mentor"
+          ? ["user", "mentor"]
+          : ["user"],
+      activeRole: role,
+      onboardingCompleted: false,
+      createdAt: serverTimestamp(),
+    }, { merge: true })
+
+    router.replace(redirect)
+  } catch (err) {
+    console.error(err)
+    setError("Unable to sign up with Google")
+  } finally {
+    setLoading(false)
   }
+}
 
   const roleCards = [
     { id: "Student", icon: <GraduationCap className="h-5 w-5" />, desc: "Explore, apply and grow globally." },
@@ -125,19 +190,25 @@ function SignupPageContent() {
     <main className="flex h-screen w-full overflow-hidden bg-white font-sans text-gray-900">
 
       {/* LEFT PANEL — fixed height, no scroll */}
-      <section 
-        className="hidden w-1/2 flex-shrink-0 h-screen overflow-hidden lg:block" 
-        style={{
-          backgroundImage: "url('/auth-bg.png')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          backgroundColor: "#e8f4fc",
-        }}
-      />
+     
+<section
+  className="hidden w-[41%] flex-shrink-0 h-screen overflow-hidden lg:block"
+  
+
+style={{
+  backgroundImage: "url('/auth-bg.png')",
+  backgroundSize: "105% 105%",
+  backgroundPosition: "center",
+  backgroundRepeat: "no-repeat",
+  backgroundColor: "#e8f4fc",
+}}
+
+
+/>
+
 
       {/* RIGHT PANEL — no scroll, fits in viewport */}
-      <section className="flex h-screen w-full flex-col overflow-hidden p-4 sm:p-5 lg:w-1/2">
+     <section className="flex h-screen w-full flex-col overflow-hidden p-4 sm:p-5 lg:w-[56%]">
         <div className="flex justify-end text-[12px] text-gray-600">
           <span className="flex items-center">
             Already have an account?
@@ -402,7 +473,7 @@ function SignupPageContent() {
               <div className="h-[1px] flex-1 bg-gray-200" />
             </div>
 
-            <button type="button" onClick={handleGoogleSignup} className="flex w-full items-center justify-center gap-2 rounded-[8px] border border-gray-200 py-2.5 text-[12px] font-medium text-gray-700 transition hover:bg-gray-50">
+            <button type="button" onClick={handleGoogleSignup} disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-[8px] border border-gray-200 py-2.5 text-[12px] font-medium text-gray-700 transition hover:bg-gray-50">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="h-4 w-4 shrink-0">
                 <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12S17.4 12 24 12c3 0 5.7 1.1 7.8 3l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z" />
                 <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 12 24 12c3 0 5.7 1.1 7.8 3l5.7-5.7C34.1 6.1 29.3 4 24 4c-7.7 0-14.3 4.3-17.7 10.7z" />
